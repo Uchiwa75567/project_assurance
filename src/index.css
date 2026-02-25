@@ -1685,6 +1685,78 @@ textarea {
 }
 
 /* ════════════════════════════════════════
+   ADD CLIENT FORM (extends add-agent-form styles)
+════════════════════════════════════════ */
+
+/* Date field with calendar icon */
+.add-client-form__date-wrap {
+  position: relative;
+}
+
+.add-client-form__date-input {
+  padding-right: 48px;
+  /* hide native calendar picker on webkit */
+  color: #374151;
+}
+
+.add-client-form__date-input::-webkit-calendar-picker-indicator {
+  opacity: 0;
+  position: absolute;
+  right: 0;
+  width: 48px;
+  height: 100%;
+  cursor: pointer;
+}
+
+.add-client-form__date-icon {
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 22px;
+  height: 24px;
+  object-fit: contain;
+  pointer-events: none;
+}
+
+/* Pack d'assurance dropdown */
+.add-client-form__pack-field {
+  margin-bottom: 56px;
+}
+
+.add-client-form__pack-label {
+  color: #6b6b6b !important;
+}
+
+.add-client-form__select-wrap {
+  position: relative;
+}
+
+.add-client-form__select {
+  appearance: none;
+  padding-right: 48px;
+  color: #6b6b6b;
+  cursor: pointer;
+  height: 66px;
+}
+
+.add-client-form__select-icon {
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 16px;
+  height: 14px;
+  object-fit: contain;
+  pointer-events: none;
+}
+
+/* Actions spacing override for client form */
+.add-client-form__actions {
+  margin-top: 0;
+}
+
+/* ════════════════════════════════════════
    RESPONSIVE (existing)
 ════════════════════════════════════════ */
 

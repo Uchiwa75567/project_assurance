@@ -3,11 +3,13 @@ import { useState, useMemo } from 'react';
 import TableFilters from '../components/TableFilters';
 import ClientsTable from '../components/ClientsTable';
 import AdminPagination from '../components/AdminPagination';
+import AjouterClientForm from '../components/AjouterClientForm';
 import { mockClients } from '../data/mockClients';
 
 const TOTAL_PAGES = 10;
 
 const GestionClientsPage: FC = () => {
+  const [showForm, setShowForm] = useState(false);
   const [search, setSearch] = useState('');
   const [statut, setStatut] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
@@ -36,26 +38,39 @@ const GestionClientsPage: FC = () => {
           />
           <h1>Gestion des clients</h1>
         </div>
-        <button className="admin-page__add-btn">Ajouter un client</button>
+        <button
+          className="admin-page__add-btn"
+          onClick={() => setShowForm((v) => !v)}
+        >
+          {showForm ? 'Retour' : 'Ajouter un client'}
+        </button>
       </div>
 
-      {/* Filters */}
-      <TableFilters
-        search={search}
-        onSearchChange={setSearch}
-        statut={statut}
-        onStatutChange={setStatut}
-      />
-
-      {/* Table card */}
-      <div className="admin-card">
-        <ClientsTable clients={filtered} />
-        <AdminPagination
-          currentPage={currentPage}
-          totalPages={TOTAL_PAGES}
-          onPageChange={setCurrentPage}
+      {showForm ? (
+        /* ── Add Client Form ── */
+        <AjouterClientForm
+          onCancel={() => setShowForm(false)}
+          onSuccess={() => setShowForm(false)}
         />
-      </div>
+      ) : (
+        /* ── Clients list ── */
+        <>
+          <TableFilters
+            search={search}
+            onSearchChange={setSearch}
+            statut={statut}
+            onStatutChange={setStatut}
+          />
+          <div className="admin-card">
+            <ClientsTable clients={filtered} />
+            <AdminPagination
+              currentPage={currentPage}
+              totalPages={TOTAL_PAGES}
+              onPageChange={setCurrentPage}
+            />
+          </div>
+        </>
+      )}
     </div>
   );
 };
