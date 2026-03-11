@@ -21,14 +21,15 @@ const ServicesSection: FC = () => {
     },
     {
       title: 'Pack Teranga Plus',
-      description:
-        'Une prise en charge santé haut de gamme, avec des soins complets, une assistance permanente et un service VIP dans les meilleures structures.',
-      price: '12 900 FCFA',
-      subtitle: 'Idéal pour familles et indépendants',
+      description: 'Couverture haut de gamme avec garantie dentaire incluse.',
+      price: '15 000 FCFA',
       features: [
         { text: 'Tout inclus' },
         { text: 'Hospitalisation' },
-        { text: 'Soins dentaires' },
+        { text: 'Soins dentaires complets' },
+        { text: 'Détartrage' },
+        { text: 'Extraction' },
+        { text: 'Soins caries' },
         { text: 'Vision' },
         { text: 'Assistance santé' },
         { text: 'Service VIP' },

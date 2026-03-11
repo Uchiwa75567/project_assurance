@@ -1,12 +1,40 @@
 import type { FC } from 'react';
-import { useState, useMemo } from 'react';
+import { useMemo, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import TableFilters from '../components/TableFilters';
 import ClientsTable from '../components/ClientsTable';
 import AdminPagination from '../components/AdminPagination';
 import AjouterClientForm from '../components/AjouterClientForm';
-import { mockClients } from '../data/mockClients';
+import { clientApi } from '../../features/clients/services/clientApi';
+import PageLoader from '../../shared/components/PageLoader';
+import ErrorBanner from '../../shared/components/ErrorBanner';
+import type { Client } from '../types';
 
-const TOTAL_PAGES = 10;
+const DEFAULT_AVATAR = '/admin/avatar-1.jpg';
+
+const mapStatusLabel = (status: string | undefined) => {
+  if (status === 'ACTIVE') return 'Active';
+  if (status === 'INACTIF') return 'Inactif';
+  if (status === 'SUSPENDU') return 'Suspendu';
+  return status ?? 'Active';
+};
+
+const toUiClient = (client: {
+  id: string;
+  numeroAssurance: string;
+  prenom: string;
+  nom: string;
+  typeAssurance?: string | null;
+  statut?: string;
+}): Client => ({
+  id: client.id,
+  numeroAssurance: client.numeroAssurance,
+  prenom: client.prenom,
+  nom: client.nom,
+  typeAssurance: client.typeAssurance ?? 'Pack Noppale Sante',
+  statut: mapStatusLabel(client.statut) as Client['statut'],
+  avatar: DEFAULT_AVATAR,
+});
 
 const GestionClientsPage: FC = () => {
   const [showForm, setShowForm] = useState(false);
@@ -14,60 +42,47 @@ const GestionClientsPage: FC = () => {
   const [statut, setStatut] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
 
-  const filtered = useMemo(() => {
-    return mockClients.filter((c) => {
-      const matchSearch =
-        !search ||
-        c.prenom.toLowerCase().includes(search.toLowerCase()) ||
-        c.nom.toLowerCase().includes(search.toLowerCase()) ||
-        c.numeroAssurance.toLowerCase().includes(search.toLowerCase());
-      const matchStatut = !statut || c.statut === statut;
-      return matchSearch && matchStatut;
-    });
-  }, [search, statut]);
+  const { data, isLoading, isError, refetch } = useQuery({
+    queryKey: ['admin-clients', search, statut, currentPage],
+    queryFn: () =>
+      clientApi.getClients({
+        search: search || undefined,
+        statut: statut === 'Active' ? 'ACTIVE' : statut === 'Inactif' ? 'INACTIF' : statut === 'Suspendu' ? 'SUSPENDU' : undefined,
+        page: currentPage - 1,
+        size: 10,
+      }),
+  });
+
+  const filtered = useMemo(() => (data?.content ?? []).map(toUiClient), [data]);
 
   return (
     <div className="admin-page">
-      {/* Page heading */}
       <div className="admin-page__header">
         <div className="admin-page__title">
-          <img
-            src="/admin/icon-user-heading.svg"
-            alt="clients"
-            className="admin-page__title-icon"
-          />
+          <img src="/admin/icon-user-heading.svg" alt="clients" className="admin-page__title-icon" />
           <h1>Gestion des clients</h1>
         </div>
-        <button
-          className="admin-page__add-btn"
-          onClick={() => setShowForm((v) => !v)}
-        >
+        <button className="admin-page__add-btn" onClick={() => setShowForm((v) => !v)}>
           {showForm ? 'Retour' : 'Ajouter un client'}
         </button>
       </div>
 
       {showForm ? (
-        /* ── Add Client Form ── */
         <AjouterClientForm
           onCancel={() => setShowForm(false)}
-          onSuccess={() => setShowForm(false)}
+          onSuccess={() => {
+            setShowForm(false);
+            void refetch();
+          }}
         />
       ) : (
-        /* ── Clients list ── */
         <>
-          <TableFilters
-            search={search}
-            onSearchChange={setSearch}
-            statut={statut}
-            onStatutChange={setStatut}
-          />
+          <TableFilters search={search} onSearchChange={setSearch} statut={statut} onStatutChange={setStatut} />
           <div className="admin-card">
+            {isLoading && <PageLoader />}
+            {isError && <ErrorBanner message="Impossible de charger les clients." />}
             <ClientsTable clients={filtered} />
-            <AdminPagination
-              currentPage={currentPage}
-              totalPages={TOTAL_PAGES}
-              onPageChange={setCurrentPage}
-            />
+            <AdminPagination currentPage={currentPage} totalPages={Math.max(data?.totalPages ?? 1, 1)} onPageChange={setCurrentPage} />
           </div>
         </>
       )}

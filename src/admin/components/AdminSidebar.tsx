@@ -1,5 +1,6 @@
 import type { FC } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
+import { authApi } from '../../features/auth/services/authApi';
 import { useAuthStore } from '../../store/authStore';
 
 interface NavItem {
@@ -13,11 +14,11 @@ interface NavItem {
 
 const navItems: NavItem[] = [
   {
-    label: 'Overview',
-    to: '/admin/overview',
-    icon: '/admin/icon-nav-overview.svg',
-    iconAlt: 'overview',
-    selfContained: true,
+    label: 'Dashboard',
+    to: '/admin/dashboard',
+    icon: '/admin/icon-dashboard-grid.svg',
+    iconAlt: 'dashboard',
+    selfContained: false,
   },
   {
     label: 'Gestion des clients',
@@ -60,7 +61,12 @@ const AdminSidebar: FC = () => {
   const navigate = useNavigate();
   const logout = useAuthStore((s) => s.logout);
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    try {
+      await authApi.logout();
+    } catch {
+      // ignore logout API errors
+    }
     logout();
     navigate('/connexion');
   };

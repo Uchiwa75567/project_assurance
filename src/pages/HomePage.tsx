@@ -15,7 +15,16 @@ import FacebookIcon from '../assets/icons/facebook.svg?react';
 import TwitterIcon from '../assets/icons/twitter.svg?react';
 import LinkedInIcon from '../assets/icons/linkedin.svg?react';
 
-const plans = [
+type Plan = {
+  title: string;
+  description: string;
+  price: string;
+  features: string[];
+  recommended?: boolean;
+  subtitle?: string;
+};
+
+const plans: Plan[] = [
   {
     title: 'Pack Noppalé Santé',
     description:
@@ -33,10 +42,19 @@ const plans = [
   {
     title: 'Pack Teranga Plus',
     description:
-      'Une prise en charge santé haut de gamme, avec des soins complets, une assistance permanente et un service VIP dans les meilleures structures.',
-    price: '12 900 FCFA',
-    subtitle: 'Idéal pour familles et indépendants',
-    features: ['Tout inclus', 'Hospitalisation', 'Soins dentaires', 'Vision', 'Assistance santé', 'Service VIP'],
+      'Couverture haut de gamme avec garantie dentaire incluse.',
+    price: '15 000 FCFA',
+    features: [
+      'Tout inclus',
+      'Hospitalisation',
+      'Soins dentaires complets',
+      'Détartrage',
+      'Extraction',
+      'Soins caries',
+      'Vision',
+      'Assistance santé',
+      'Service VIP',
+    ],
     recommended: true,
   },
   {

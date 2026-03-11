@@ -1,0 +1,22 @@
+<svg width="768" height="151" viewBox="0 0 768 151" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <filter id="glow" x="-20%" y="-80%" width="140%" height="260%">
+      <feGaussianBlur stdDeviation="1.2" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  <path
+    d="M1 76 L85 76 L96 101 L114 49 L130 76 L156 76 L178 8 L196 126 L217 40 L228 76 L238 54 L261 95 L279 76 L361 76
+       C375 53 393 53 406 76
+       C419 53 437 53 451 76
+       L530 76 L547 95 L567 49 L583 76 L601 76 L620 8 L639 128 L659 40 L674 76 L686 54 L707 95 L722 76 L767 76"
+    stroke="#C8F5FF"
+    stroke-width="4"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    filter="url(#glow)"
+  />
+</svg>

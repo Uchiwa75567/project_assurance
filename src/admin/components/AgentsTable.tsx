@@ -1,5 +1,5 @@
 import type { FC } from 'react';
-import type { Agent } from '../data/mockAgents';
+import type { Agent } from '../types';
 
 interface AgentsTableProps {
   agents: Agent[];
