@@ -11,6 +11,7 @@ export const clientApi = {
 
     return httpClient.get<ClientsPageResult>(`/clients?${query.toString()}`);
   },
+  getMe: () => httpClient.get<Client>('/clients/me'),
   createClient: (payload: {
     userId?: string | null;
     prenom: string;
@@ -19,6 +20,7 @@ export const clientApi = {
     telephone: string;
     adresse?: string | null;
     numeroCni?: string | null;
+    photoUrl?: string | null;
     typeAssurance?: string | null;
     statut?: 'ACTIVE' | 'INACTIF' | 'SUSPENDU';
     createdByAgentId?: string | null;

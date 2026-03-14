@@ -10,9 +10,11 @@ import { clientApi } from '../../features/clients/services/clientApi';
 import PageLoader from '../../shared/components/PageLoader';
 import ErrorBanner from '../../shared/components/ErrorBanner';
 import type { Client } from '../types';
+import { ROUTES } from '../../shared/constants/routes';
+import { ASSETS } from '../../shared/constants/assets';
 
 const PREVIEW_COUNT = 5;
-const DEFAULT_AVATAR = '/admin/avatar-1.jpg';
+const DEFAULT_AVATAR = ASSETS.defaultAvatar;
 
 const mapStatusLabel = (status: string | undefined) => {
   if (status === 'ACTIVE') return 'Active';
@@ -26,6 +28,7 @@ const toUiClient = (client: {
   numeroAssurance: string;
   prenom: string;
   nom: string;
+  photoUrl?: string | null;
   typeAssurance?: string | null;
   statut?: string;
 }): Client => ({
@@ -35,7 +38,7 @@ const toUiClient = (client: {
   nom: client.nom,
   typeAssurance: client.typeAssurance ?? 'Pack Noppale Sante',
   statut: mapStatusLabel(client.statut) as Client['statut'],
-  avatar: DEFAULT_AVATAR,
+  avatar: client.photoUrl || DEFAULT_AVATAR,
 });
 
 const DashboardPage: FC = () => {
@@ -59,7 +62,7 @@ const DashboardPage: FC = () => {
           <StatisticsChart />
 
           <div className="dash-voir-plus-row">
-            <button className="dash-voir-plus-btn" onClick={() => navigate('/admin/gestion-clients')}>
+            <button className="dash-voir-plus-btn" onClick={() => navigate(ROUTES.adminClients)}>
               Voir plus
             </button>
           </div>

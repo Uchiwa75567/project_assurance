@@ -3,6 +3,7 @@ import { lazy, Suspense } from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
 import AuthGuard from '../../shared/components/AuthGuard';
 import PageLoader from '../../shared/components/PageLoader';
+import { ROUTES } from '../../shared/constants/routes';
 
 const HomePage = lazy(() => import('../../pages/HomePage'));
 const LoginPage = lazy(() => import('../../pages/LoginPage'));
@@ -24,12 +25,12 @@ const AppRouter: FC = () => {
   return (
     <Suspense fallback={<PageLoader />}>
       <Routes>
-        <Route path="/" element={<HomePage />} />
-        <Route path="/connexion" element={<LoginPage />} />
-        <Route path="/inscription" element={<RegisterPage />} />
+        <Route path={ROUTES.home} element={<HomePage />} />
+        <Route path={ROUTES.login} element={<LoginPage />} />
+        <Route path={ROUTES.register} element={<RegisterPage />} />
 
         <Route
-          path="/client"
+          path={ROUTES.client}
           element={
             <AuthGuard allow={['client']}>
               <ClientSpacePage />
@@ -38,7 +39,7 @@ const AppRouter: FC = () => {
         />
 
         <Route
-          path="/agent"
+          path={ROUTES.agent}
           element={
             <AuthGuard allow={['agent']}>
               <AgentLayout />
@@ -52,7 +53,7 @@ const AppRouter: FC = () => {
         </Route>
 
         <Route
-          path="/admin"
+          path={ROUTES.admin}
           element={
             <AuthGuard allow={['admin']}>
               <AdminLayout />

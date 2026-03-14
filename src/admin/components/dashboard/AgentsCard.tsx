@@ -1,5 +1,6 @@
 import type { FC } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { ROUTES } from '../../../shared/constants/routes';
 
 const AgentsCard: FC = () => {
   const navigate = useNavigate();
@@ -8,7 +9,7 @@ const AgentsCard: FC = () => {
     <div className="dash-agents-card">
       <button
         className="dash-agents-card__btn"
-        onClick={() => navigate('/admin/gestion-agents')}
+        onClick={() => navigate(ROUTES.adminAgents)}
       >
         Voir mes agents
       </button>

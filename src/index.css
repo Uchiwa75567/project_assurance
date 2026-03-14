@@ -1,3 +1,4 @@
+@import "tailwindcss";
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;700&display=swap');
@@ -1033,7 +1034,7 @@ textarea {
 }
 
 .register-page .login-form {
-  gap: 12px;
+  gap: 24px;
 }
 
 .register-page .login-input {
@@ -1044,6 +1045,15 @@ textarea {
   margin-top: 10px;
   padding: 14px 24px;
   font-size: clamp(18px, 1.8vw, 26px);
+}
+
+.register-photo-preview {
+  width: 140px;
+  height: 140px;
+  border-radius: 12px;
+  object-fit: cover;
+  border: 1px solid rgba(196, 215, 255, 0.3);
+  align-self: center;
 }
 
 .register-page .register-footer {
@@ -3522,6 +3532,8 @@ textarea {
   height: 46px;
   border-radius: 50%;
   background: #7ca8ff;
+  object-fit: cover;
+  display: block;
 }
 
 .client-space__content {

@@ -8,6 +8,7 @@ export interface Client {
   telephone?: string;
   adresse?: string | null;
   numeroCni?: string | null;
+  photoUrl?: string | null;
   typeAssurance?: string | null;
   statut: 'Active' | 'Inactif' | 'Suspendu' | string;
   createdByAgentId?: string | null;

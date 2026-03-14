@@ -9,10 +9,11 @@ import AdminAgentLiveTrackingPanel from '../../features/agents/components/AdminA
 import { agentApi } from '../../features/agents/services/agentApi';
 import PageLoader from '../../shared/components/PageLoader';
 import ErrorBanner from '../../shared/components/ErrorBanner';
+import { ASSETS } from '../../shared/constants/assets';
 import type { Agent } from '../types';
 
 const PAGE_SIZE = 10;
-const DEFAULT_AVATAR = '/admin/avatar-1.jpg';
+const DEFAULT_AVATAR = ASSETS.defaultAvatar;
 
 const mapStatusLabel = (status: string) => {
   if (status === 'ACTIVE') return 'Active';

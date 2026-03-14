@@ -18,7 +18,11 @@ import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
 import markerIcon from 'leaflet/dist/images/marker-icon.png';
 import markerShadow from 'leaflet/dist/images/marker-shadow.png';
 import { authApi } from '../../features/auth/services/authApi';
+import { clientApi } from '../../features/clients/services/clientApi';
+import type { Client } from '../../features/clients/types/client.types';
 import { useAuthStore } from '../../store/authStore';
+import { ROUTES } from '../../shared/constants/routes';
+import { ASSETS } from '../../shared/constants/assets';
 
 type Hospital = {
   id: string;
@@ -407,14 +411,34 @@ const ClientSpacePage: FC = () => {
       // ignore logout API errors
     }
     logout();
-    navigate('/connexion');
+    navigate(ROUTES.login);
   };
+
+  const [clientProfile, setClientProfile] = useState<Client | null>(null);
+  const fullName = useAuthStore((s) => s.fullName);
+
+  useEffect(() => {
+    let isMounted = true;
+    clientApi
+      .getMe()
+      .then((data) => {
+        if (isMounted) setClientProfile(data);
+      })
+      .catch(() => {
+        if (isMounted) setClientProfile(null);
+      });
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const displayName = clientProfile ? `${clientProfile.prenom} ${clientProfile.nom}` : fullName ?? 'Client';
 
   return (
     <div className="client-space">
       <header className="client-space__header">
         <img
-          src="/admin/logo.png"
+          src={ASSETS.adminLogo}
           alt="MA Sante Assurance"
           className="client-space__logo"
         />
@@ -426,8 +450,12 @@ const ClientSpacePage: FC = () => {
           onClick={handleLogout}
           title="Se deconnecter"
         >
-          <span>Abdoulaye Diallo</span>
-          <span className="client-space__avatar" aria-hidden="true" />
+          <span>{displayName}</span>
+          {clientProfile?.photoUrl ? (
+            <img src={clientProfile.photoUrl} alt={displayName} className="client-space__avatar" />
+          ) : (
+            <span className="client-space__avatar" aria-hidden="true" />
+          )}
         </button>
       </header>
 
@@ -440,14 +468,14 @@ const ClientSpacePage: FC = () => {
             </div>
 
             <div className="client-card__body">
-              <p>Nom : Abdoulaye Diallo</p>
-              <p>Numero Assurance : MA-2026-000123</p>
+              <p>Nom : {displayName}</p>
+              <p>Numero Assurance : {clientProfile?.numeroAssurance ?? 'N/A'}</p>
               <p>Formule : Pack Noppale Sante</p>
               <p>Validite : 24/02/2026</p>
             </div>
 
             <img
-              src="/admin/logo.png"
+              src={ASSETS.adminLogo}
               alt="MA Sante Assurance"
               className="client-card__brand"
             />

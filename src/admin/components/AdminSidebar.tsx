@@ -2,60 +2,9 @@ import type { FC } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { authApi } from '../../features/auth/services/authApi';
 import { useAuthStore } from '../../store/authStore';
-
-interface NavItem {
-  label: string;
-  to: string;
-  icon: string;
-  iconAlt: string;
-  /** true = icon file already includes its own gray rounded background */
-  selfContained: boolean;
-}
-
-const navItems: NavItem[] = [
-  {
-    label: 'Dashboard',
-    to: '/admin/dashboard',
-    icon: '/admin/icon-dashboard-grid.svg',
-    iconAlt: 'dashboard',
-    selfContained: false,
-  },
-  {
-    label: 'Gestion des clients',
-    to: '/admin/gestion-clients',
-    icon: '/admin/icon-nav-clients.svg',
-    iconAlt: 'clients',
-    selfContained: true,
-  },
-  {
-    label: 'Gestion des agents',
-    to: '/admin/gestion-agents',
-    icon: '/admin/icon-nav-agents.svg',
-    iconAlt: 'agents',
-    selfContained: false,
-  },
-  {
-    label: 'Gestion des partenaires',
-    to: '/admin/gestion-partenaires',
-    icon: '/admin/icon-nav-partners.svg',   // raw monochrome cross-in-square icon
-    iconAlt: 'partenaires',
-    selfContained: false,
-  },
-  {
-    label: 'Gestion des formules',
-    to: '/admin/gestion-formules',
-    icon: '/admin/icon-nav-partners.svg',   // same cross-in-square for formules
-    iconAlt: 'formules',
-    selfContained: false,
-  },
-  {
-    label: 'Rapport',
-    to: '/admin/rapport',
-    icon: '/admin/icon-pdf.svg',
-    iconAlt: 'rapport',
-    selfContained: false,
-  },
-];
+import { ROUTES } from '../../shared/constants/routes';
+import { adminNavItems } from '../../shared/constants/adminNavItems';
+import { ASSETS } from '../../shared/constants/assets';
 
 const AdminSidebar: FC = () => {
   const navigate = useNavigate();
@@ -68,17 +17,17 @@ const AdminSidebar: FC = () => {
       // ignore logout API errors
     }
     logout();
-    navigate('/connexion');
+    navigate(ROUTES.login);
   };
 
   return (
     <aside className="admin-sidebar">
       <div className="admin-sidebar__logo">
-        <img src="/admin/logo.png" alt="MA Santé Assurance" />
+        <img src={ASSETS.adminLogo} alt="MA Santé Assurance" />
       </div>
 
       <nav className="admin-sidebar__nav">
-        {navItems.map((item) => (
+        {adminNavItems.map((item) => (
           <NavLink
             key={item.to}
             to={item.to}
@@ -129,7 +78,7 @@ const AdminSidebar: FC = () => {
         <div className="admin-sidebar__user-card">
           <div className="admin-sidebar__profile">
             <img
-              src="/admin/mark-john.png"
+              src={ASSETS.adminAvatar}
               alt="Mark John"
               className="admin-sidebar__avatar"
             />

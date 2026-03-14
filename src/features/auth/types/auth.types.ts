@@ -5,6 +5,6 @@ export interface AuthSession {
   refreshTokenExpiresIn: number;
   userId: string;
   fullName: string;
-  email: string;
+  email: string | null;
   role: BackendUserRole;
 }

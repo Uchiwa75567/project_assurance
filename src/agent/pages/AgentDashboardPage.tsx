@@ -2,10 +2,11 @@ import type { FC } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import AgentStatisticsChart from '../components/AgentStatisticsChart';
 import { clientApi } from '../../features/clients/services/clientApi';
+import { ASSETS } from '../../shared/constants/assets';
 import PageLoader from '../../shared/components/PageLoader';
 import ErrorBanner from '../../shared/components/ErrorBanner';
 
-const DEFAULT_AVATAR = '/admin/avatar-1.jpg';
+const DEFAULT_AVATAR = ASSETS.defaultAvatar;
 const NOW_TS = Date.now();
 
 const statusLabel = (value?: string | null) => {

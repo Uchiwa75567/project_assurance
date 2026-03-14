@@ -7,9 +7,10 @@ import { authApi } from '../features/auth/services/authApi';
 import { useAuthStore } from '../store/authStore';
 import ErrorBanner from '../shared/components/ErrorBanner';
 import { ApiError } from '../services/api/httpClient';
+import { ROUTES } from '../shared/constants/routes';
 
 type LoginFormData = {
-  email: string;
+  identifiant: string;
   motDePasse: string;
 };
 
@@ -23,19 +24,19 @@ const LoginPage: FC = () => {
   const onSubmit = async (data: LoginFormData) => {
     setIsSubmitting(true);
     try {
-      const session = await authApi.login(data.email, data.motDePasse);
+      const session = await authApi.login(data.identifiant, data.motDePasse);
       setSession(session);
 
       if (session.role === 'ADMIN') {
-        navigate('/admin/dashboard');
+        navigate(ROUTES.adminDashboard);
       } else if (session.role === 'AGENT') {
-        navigate('/agent/dashboard');
+        navigate(ROUTES.agentDashboard);
       } else {
-        navigate('/client');
+        navigate(ROUTES.client);
       }
     } catch (e) {
       if (e instanceof ApiError) setError(e.message);
-      else setError('Connexion impossible. Verifie email/mot de passe et serveur backend.');
+      else setError("Connexion impossible. Verifie l'identifiant et le mot de passe.");
     } finally {
       setIsSubmitting(false);
     }
@@ -56,18 +57,18 @@ const LoginPage: FC = () => {
 
       <div className="login-right">
         <div className="login-form-wrap">
-          <button type="button" className="login-home-btn" onClick={() => navigate('/')}>
+          <button type="button" className="login-home-btn" onClick={() => navigate(ROUTES.home)}>
             <span aria-hidden="true">←</span> Retour a l'accueil
           </button>
           <h1 className="login-title">Se connecter</h1>
 
           <form onSubmit={handleSubmit(onSubmit)} className="login-form" noValidate>
             <input
-              {...register('email')}
-              type="email"
-              placeholder="Entrez votre email"
+              {...register('identifiant')}
+              type="text"
+              placeholder="Email ou numero d'assurance"
               className="login-input"
-              autoComplete="email"
+              autoComplete="username"
             />
 
             <input
@@ -87,7 +88,7 @@ const LoginPage: FC = () => {
 
           <p className="register-footer">
             <span className="register-footer__text">Je n'ai pas de compte </span>
-            <button type="button" className="register-footer__link" onClick={() => navigate('/inscription')}>
+            <button type="button" className="register-footer__link" onClick={() => navigate(ROUTES.register)}>
               S'inscrire
             </button>
           </p>

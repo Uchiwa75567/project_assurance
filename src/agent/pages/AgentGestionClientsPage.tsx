@@ -5,8 +5,10 @@ import { useQuery } from '@tanstack/react-query';
 import { clientApi } from '../../features/clients/services/clientApi';
 import PageLoader from '../../shared/components/PageLoader';
 import ErrorBanner from '../../shared/components/ErrorBanner';
+import { ROUTES } from '../../shared/constants/routes';
+import { ASSETS } from '../../shared/constants/assets';
 
-const DEFAULT_AVATAR = '/admin/avatar-1.jpg';
+const DEFAULT_AVATAR = ASSETS.defaultAvatar;
 
 const statusLabel = (value?: string | null) => {
   if (value === 'ACTIVE') return 'Active';
@@ -32,7 +34,7 @@ const AgentGestionClientsPage: FC = () => {
         <img src="/agent/icon-page-title.svg" alt="" className="agent-page__title-icon" />
         <h1 className="agent-page__title">Gestion des clients</h1>
 
-        <button className="admin-page__add-btn" style={{ marginLeft: 'auto' }} onClick={() => navigate('/agent/ajouter-client')}>
+        <button className="admin-page__add-btn" style={{ marginLeft: 'auto' }} onClick={() => navigate(ROUTES.agentAddClient)}>
           + Ajouter un client
         </button>
       </div>

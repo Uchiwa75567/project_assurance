@@ -2,34 +2,9 @@ import type { FC } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { authApi } from '../../features/auth/services/authApi';
 import { useAuthStore } from '../../store/authStore';
-
-interface NavItem {
-  label: string;
-  to: string;
-  icon: string;
-  iconAlt: string;
-}
-
-const navItems: NavItem[] = [
-  {
-    label: 'Dashboard',
-    to: '/agent/dashboard',
-    icon: '/agent/icon-dashboard.svg',
-    iconAlt: 'dashboard',
-  },
-  {
-    label: 'Ajouter un client',
-    to: '/agent/ajouter-client',
-    icon: '/agent/icon-add-client.svg',
-    iconAlt: 'ajouter client',
-  },
-  {
-    label: 'Gestion des clients',
-    to: '/agent/gestion-clients',
-    icon: '/agent/icon-manage-clients.svg',
-    iconAlt: 'gestion clients',
-  },
-];
+import { ROUTES } from '../../shared/constants/routes';
+import { agentNavItems } from '../../shared/constants/agentNavItems';
+import { ASSETS } from '../../shared/constants/assets';
 
 const AgentSidebar: FC = () => {
   const navigate = useNavigate();
@@ -42,17 +17,17 @@ const AgentSidebar: FC = () => {
       // ignore logout API errors
     }
     logout();
-    navigate('/connexion');
+    navigate(ROUTES.login);
   };
 
   return (
     <aside className="agent-sidebar">
       <div className="agent-sidebar__logo">
-        <img src="/admin/logo.png" alt="MA Santé Assurance" />
+        <img src={ASSETS.adminLogo} alt="MA Santé Assurance" />
       </div>
 
       <nav className="agent-sidebar__nav">
-        {navItems.map((item) => (
+        {agentNavItems.map((item) => (
           <NavLink
             key={item.to}
             to={item.to}
@@ -86,7 +61,7 @@ const AgentSidebar: FC = () => {
       <div className="agent-sidebar__bottom">
         <div className="agent-sidebar__profile-wrap">
           <img
-            src="/agent/mark-john.png"
+            src={ASSETS.agentAvatar}
             alt="Mark John"
             className="agent-sidebar__avatar"
           />

@@ -1,0 +1,17 @@
+export const ROUTES = {
+  home: '/',
+  login: '/connexion',
+  register: '/inscription',
+  client: '/client',
+  agent: '/agent',
+  agentDashboard: '/agent/dashboard',
+  agentAddClient: '/agent/ajouter-client',
+  agentManageClients: '/agent/gestion-clients',
+  admin: '/admin',
+  adminDashboard: '/admin/dashboard',
+  adminClients: '/admin/gestion-clients',
+  adminAgents: '/admin/gestion-agents',
+  adminPartners: '/admin/gestion-partenaires',
+  adminPacks: '/admin/gestion-formules',
+  adminRapport: '/admin/rapport',
+} as const;

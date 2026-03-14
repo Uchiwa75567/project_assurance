@@ -1,6 +1,7 @@
 import type { FC } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AjouterClientForm from '../../admin/components/AjouterClientForm';
+import { ROUTES } from '../../shared/constants/routes';
 
 const AgentAjouterClientPage: FC = () => {
   const navigate = useNavigate();
@@ -18,8 +19,8 @@ const AgentAjouterClientPage: FC = () => {
       </div>
 
       <AjouterClientForm
-        onSuccess={() => navigate('/agent/gestion-clients')}
-        onCancel={() => navigate('/agent/dashboard')}
+        onSuccess={() => navigate(ROUTES.agentManageClients)}
+        onCancel={() => navigate(ROUTES.agentDashboard)}
       />
     </div>
   );
