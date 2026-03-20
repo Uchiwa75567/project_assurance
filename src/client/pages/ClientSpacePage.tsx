@@ -20,6 +20,13 @@ import markerShadow from 'leaflet/dist/images/marker-shadow.png';
 import { authApi } from '../../features/auth/services/authApi';
 import { clientApi } from '../../features/clients/services/clientApi';
 import type { Client } from '../../features/clients/types/client.types';
+import { packApi } from '../../features/packs/services/packApi';
+import { packGarantieApi } from '../../features/garanties/services/packGarantieApi';
+import type { PackGarantie } from '../../features/garanties/types/packGarantie.types';
+import { souscriptionApi } from '../../features/souscriptions/services/souscriptionApi';
+import type { Souscription } from '../../features/souscriptions/types/souscription.types';
+import { carteApi } from '../../features/cartes/services/carteApi';
+import type { Carte } from '../../features/cartes/types/carte.types';
 import { useAuthStore } from '../../store/authStore';
 import { ROUTES } from '../../shared/constants/routes';
 import { ASSETS } from '../../shared/constants/assets';
@@ -75,6 +82,17 @@ const bearingToCardinal = (bearing: number) => {
 const angleDiff = (a: number, b: number) => {
   const diff = Math.abs(a - b) % 360;
   return diff > 180 ? 360 - diff : diff;
+};
+
+const formatDate = (value?: string | null) => {
+  if (!value) return 'N/A';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return 'N/A';
+  return new Intl.DateTimeFormat('fr-FR', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+  }).format(date);
 };
 
 const nearbyHospitals: Hospital[] = [
@@ -415,6 +433,10 @@ const ClientSpacePage: FC = () => {
   };
 
   const [clientProfile, setClientProfile] = useState<Client | null>(null);
+  const [garanties, setGaranties] = useState<PackGarantie[]>([]);
+  const [activeSouscription, setActiveSouscription] = useState<Souscription | null>(null);
+  const [packLabel, setPackLabel] = useState<string | null>(null);
+  const [carte, setCarte] = useState<Carte | null>(null);
   const fullName = useAuthStore((s) => s.fullName);
 
   useEffect(() => {
@@ -432,7 +454,103 @@ const ClientSpacePage: FC = () => {
     };
   }, []);
 
+  useEffect(() => {
+    let isMounted = true;
+
+    const fetchGaranties = async () => {
+      if (!clientProfile) {
+        if (isMounted) setGaranties([]);
+        if (isMounted) setActiveSouscription(null);
+        if (isMounted) setPackLabel(null);
+        return;
+      }
+
+      let packId: string | null = null;
+      let packName: string | null = null;
+      try {
+        const souscriptions = await souscriptionApi.list();
+        const active = souscriptions.find(
+          (s) => s.clientId === clientProfile.id && s.statut === 'ACTIVE'
+        );
+        const fallback = souscriptions.find((s) => s.clientId === clientProfile.id);
+        const selected = active ?? fallback ?? null;
+        packId = selected?.packId ?? null;
+        if (isMounted) setActiveSouscription(selected);
+      } catch {
+        packId = null;
+        if (isMounted) setActiveSouscription(null);
+      }
+
+      if (!packId && clientProfile.typeAssurance) {
+        try {
+          const packs = await packApi.list();
+          const target = clientProfile.typeAssurance.trim().toLowerCase();
+          const packMatch = packs.find(
+            (pack) =>
+              pack.nom.trim().toLowerCase() === target ||
+              pack.code.trim().toLowerCase() === target
+          );
+          packId = packMatch?.id ?? null;
+          packName = packMatch?.nom ?? null;
+        } catch {
+          packId = null;
+        }
+      }
+
+      if (!packId) {
+        if (isMounted) setGaranties([]);
+        if (isMounted) setPackLabel(packName);
+        return;
+      }
+
+      try {
+        if (!packName) {
+          const packs = await packApi.list();
+          packName = packs.find((pack) => pack.id === packId)?.nom ?? null;
+        }
+        if (isMounted) setPackLabel(packName);
+        const data = await packGarantieApi.listByPack(packId);
+        if (isMounted) setGaranties(data);
+      } catch {
+        if (isMounted) setGaranties([]);
+        if (isMounted) setPackLabel(packName);
+      }
+    };
+
+    void fetchGaranties();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [clientProfile]);
+
+  useEffect(() => {
+    let isMounted = true;
+    if (!activeSouscription?.id) {
+      setCarte(null);
+      return () => {
+        isMounted = false;
+      };
+    }
+
+    carteApi
+      .getBySouscription(activeSouscription.id)
+      .then((data) => {
+        if (isMounted) setCarte(data);
+      })
+      .catch(() => {
+        if (isMounted) setCarte(null);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [activeSouscription?.id]);
+
   const displayName = clientProfile ? `${clientProfile.prenom} ${clientProfile.nom}` : fullName ?? 'Client';
+  const cardStatus = carte?.statut === 'EXPIRED' ? 'Expiree' : 'Active';
+  const cardValidity = formatDate(carte?.dateExpiration);
+  const cardPackLabel = packLabel ?? clientProfile?.typeAssurance ?? 'N/A';
 
   return (
     <div className="client-space">
@@ -464,14 +582,20 @@ const ClientSpacePage: FC = () => {
           <article className="client-card">
             <div className="client-card__top">
               <h2>Carte Digitale Assurance</h2>
-              <span className="client-card__status">Active</span>
+              <span className="client-card__status">{cardStatus}</span>
             </div>
 
             <div className="client-card__body">
               <p>Nom : {displayName}</p>
               <p>Numero Assurance : {clientProfile?.numeroAssurance ?? 'N/A'}</p>
-              <p>Formule : Pack Noppale Sante</p>
-              <p>Validite : 24/02/2026</p>
+              <p>Numero Carte : {carte?.numeroCarte ?? 'N/A'}</p>
+              <p>Formule : {cardPackLabel}</p>
+              <p>Validite : {cardValidity}</p>
+              <img
+                src={carte?.qrCode ?? '/client/qr-placeholder.svg'}
+                alt="QR code assurance"
+                style={{ width: 90, height: 90, objectFit: 'contain', marginTop: 8 }}
+              />
             </div>
 
             <img
@@ -495,9 +619,15 @@ const ClientSpacePage: FC = () => {
           <article className="client-guarantees">
             <h2>Mes Garanties</h2>
             <ul>
-              <li>Consultations generales</li>
-              <li>Medicaments de base</li>
-              <li>Prevention (controle sante)</li>
+              {garanties.length > 0
+                ? garanties.map((g) => <li key={g.id}>{g.garantieLibelle}</li>)
+                : (
+                  <>
+                    <li>Consultations generales</li>
+                    <li>Medicaments de base</li>
+                    <li>Prevention (controle sante)</li>
+                  </>
+                )}
             </ul>
           </article>
         </section>

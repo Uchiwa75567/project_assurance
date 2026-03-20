@@ -36,7 +36,9 @@ const PacksListPage: FC = () => {
             <span className="admin-table-cell">{pack.code}</span>
             <span className="admin-table-cell">{pack.nom}</span>
             <span className="admin-table-cell">{pack.description}</span>
-            <span className="admin-table-cell">{pack.prixMensuel} {pack.devise}</span>
+            <span className="admin-table-cell">
+              {pack.prix} / {pack.duree} mois
+            </span>
             <span className={`admin-table-cell admin-table-cell--status admin-table-cell--${pack.actif ? 'active' : 'inactif'}`}>
               {pack.actif ? 'Active' : 'Inactif'}
             </span>

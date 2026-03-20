@@ -3,7 +3,7 @@ import { persist } from 'zustand/middleware';
 import type { AuthSession } from '../features/auth/types/auth.types';
 import { isExpired } from '../shared/utils/jwt';
 
-type UserRole = 'admin' | 'client' | 'agent' | null;
+type UserRole = 'admin' | 'client' | 'agent' | 'partenaire' | null;
 
 interface AuthState {
   role: UserRole;
@@ -22,6 +22,7 @@ interface AuthState {
 const mapRole = (role: AuthSession['role']): UserRole => {
   if (role === 'ADMIN') return 'admin';
   if (role === 'AGENT') return 'agent';
+  if (role === 'PARTENAIRE') return 'partenaire';
   return 'client';
 };
 

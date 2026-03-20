@@ -1,4 +1,4 @@
-export type BackendUserRole = 'ADMIN' | 'AGENT' | 'CLIENT';
+export type BackendUserRole = 'ADMIN' | 'AGENT' | 'CLIENT' | 'PARTENAIRE';
 
 export interface AuthSession {
   accessTokenExpiresIn: number;

@@ -3,7 +3,7 @@ export interface Pack {
   code: string;
   nom: string;
   description: string;
-  prixMensuel: number;
-  devise: string;
+  prix: number;
+  duree: number;
   actif: boolean;
 }
