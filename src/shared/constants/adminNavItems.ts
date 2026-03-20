@@ -35,12 +35,6 @@ export const adminNavItems = [
     icon: '/admin/icon-nav-partners.svg',
     iconAlt: 'formules',
     selfContained: false,
-  },
-  {
-    label: 'Rapport',
-    to: ROUTES.adminRapport,
-    icon: '/admin/icon-pdf.svg',
-    iconAlt: 'rapport',
-    selfContained: false,
-  },
+  }
 ];
+

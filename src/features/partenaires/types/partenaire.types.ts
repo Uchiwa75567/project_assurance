@@ -10,3 +10,10 @@ export interface Partenaire {
   distanceKm?: number | null;
   actif: boolean;
 }
+
+export interface CreatePartenairePayload {
+  nom: string;
+  societe: string;
+  adresse: string;
+  telephone: string;
+}
