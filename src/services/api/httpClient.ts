@@ -4,6 +4,12 @@ import { ApiError } from '../../shared/types/api.types';
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8080/api';
 let csrfTokenCache: string | null = null;
 
+type RequestOptions = Omit<RequestInit, 'body' | 'headers' | 'method'> & {
+  body?: unknown;
+  headers?: HeadersInit;
+  method?: string;
+};
+
 function getCookie(name: string): string | null {
   const match = document.cookie.match(new RegExp(`(?:^|; )${name}=([^;]*)`));
   return match ? decodeURIComponent(match[1]) : null;
@@ -30,28 +36,41 @@ async function ensureCsrfCookie(): Promise<string | null> {
   return csrfTokenCache;
 }
 
-async function request<T>(path: string, init?: RequestInit): Promise<T> {
+async function request<T>(path: string, init?: RequestOptions): Promise<T> {
   const method = (init?.method ?? 'GET').toUpperCase();
   const isMutation = method !== 'GET' && method !== 'HEAD' && method !== 'OPTIONS';
+  const body = init?.body;
+  const isFormData = typeof FormData !== 'undefined' && body instanceof FormData;
 
   let csrfToken: string | null = csrfTokenCache ?? getCookie('XSRF-TOKEN');
   if (isMutation) {
     csrfToken = await ensureCsrfCookie();
   }
 
+  const requestBody: BodyInit | null | undefined = isFormData
+    ? (body as FormData)
+    : body === undefined
+      ? undefined
+      : typeof body === 'string'
+        ? body
+        : JSON.stringify(body);
+
+  const headers: HeadersInit = {
+    ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
+    ...(isMutation && csrfToken
+      ? {
+          'X-XSRF-TOKEN': csrfToken,
+          'X-CSRF-TOKEN': csrfToken,
+        }
+      : {}),
+    ...(init?.headers ?? {}),
+  };
+
   const response = await fetch(`${API_BASE_URL}${path}`, {
-    credentials: 'include',
-    headers: {
-      'Content-Type': 'application/json',
-      ...(isMutation && csrfToken
-        ? {
-            'X-XSRF-TOKEN': csrfToken,
-            'X-CSRF-TOKEN': csrfToken,
-          }
-        : {}),
-      ...(init?.headers ?? {}),
-    },
     ...init,
+    credentials: 'include',
+    headers,
+    body: requestBody,
   });
 
   const text = await response.text();
@@ -77,12 +96,12 @@ export const httpClient = {
   post: <T>(path: string, body: unknown) =>
     request<T>(path, {
       method: 'POST',
-      body: JSON.stringify(body),
+      body,
     }),
   patch: <T>(path: string, body: unknown) =>
     request<T>(path, {
       method: 'PATCH',
-      body: JSON.stringify(body),
+      body,
     }),
 };
 

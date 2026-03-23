@@ -2548,6 +2548,176 @@ textarea {
 }
 
 /* ════════════════════════════════════════
+   OTP PAGE
+════════════════════════════════════════ */
+
+.otp-form-wrap {
+  max-width: 600px;
+}
+
+.otp-title {
+  font-size: clamp(26px, 3.2vw, 48px);
+  letter-spacing: -1.2px;
+  margin-bottom: 24px;
+}
+
+.otp-subtitle {
+  font-family: 'Poppins', sans-serif;
+  font-size: clamp(13px, 1.2vw, 20px);
+  font-weight: 600;
+  line-height: 1.55;
+  color: #c8c4c4;
+  text-align: center;
+  margin-bottom: 14px;
+}
+
+.otp-subtitle strong {
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.otp-label {
+  font-family: 'Poppins', sans-serif;
+  font-size: clamp(13px, 1.2vw, 20px);
+  font-weight: 600;
+  color: #ffffff;
+  text-align: center;
+  margin-bottom: 0;
+}
+
+.otp-inputs {
+  display: flex;
+  gap: clamp(8px, 1.2vw, 18px);
+  margin: 28px 0;
+  justify-content: center;
+}
+
+.otp-input-box {
+  width: clamp(50px, 5.2vw, 78px);
+  height: clamp(58px, 6.2vw, 90px);
+  background: rgba(13, 30, 65, 0.75);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  border-radius: 8px;
+  font-family: 'Poppins', sans-serif;
+  font-size: clamp(26px, 2.8vw, 48px);
+  font-weight: 600;
+  color: #ffffff;
+  text-align: center;
+  outline: none;
+  transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+  caret-color: transparent;
+}
+
+.otp-input-box:focus {
+  border-color: rgba(255, 255, 255, 0.9);
+  background: rgba(13, 30, 65, 0.95);
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.12);
+}
+
+.otp-input-box--filled {
+  border-color: rgba(255, 255, 255, 0.8);
+}
+
+.otp-resend {
+  margin-top: 22px;
+  text-align: center;
+  font-family: 'Poppins', sans-serif;
+  font-size: clamp(13px, 1.4vw, 22px);
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.otp-resend__link {
+  background: none;
+  border: 0;
+  font-family: 'Poppins', sans-serif;
+  font-size: clamp(13px, 1.4vw, 22px);
+  font-weight: 600;
+  color: #5b8ef7;
+  cursor: pointer;
+  padding: 0;
+  transition: opacity 0.2s;
+}
+
+.otp-resend__link:hover:not(:disabled) {
+  opacity: 0.8;
+}
+
+.otp-resend__link:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.otp-resend-success {
+  font-family: 'Poppins', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: #4ade80;
+  text-align: center;
+  margin-top: 10px;
+}
+
+/* ── OTP Success Page ── */
+
+.otp-success-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 55vh;
+  padding: 24px 0 40px;
+  width: 100%;
+  max-width: 534px;
+}
+
+.otp-success-icon {
+  width: clamp(140px, 13vw, 204px);
+  height: clamp(140px, 13vw, 204px);
+  object-fit: contain;
+  animation: otp-pop-in 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+@keyframes otp-pop-in {
+  from {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.otp-continuer-btn {
+  width: clamp(280px, 32vw, 480px);
+  font-size: clamp(20px, 2.2vw, 36px);
+}
+
+@media (max-width: 768px) {
+  .otp-inputs {
+    gap: 8px;
+  }
+
+  .otp-input-box {
+    width: 44px;
+    height: 52px;
+    font-size: 22px;
+    border-radius: 6px;
+  }
+
+  .otp-success-wrap {
+    gap: 60px;
+    justify-content: center;
+    min-height: auto;
+    padding: 40px 0;
+  }
+
+  .otp-continuer-btn {
+    width: 100%;
+  }
+}
+
+/* ════════════════════════════════════════
    RESPONSIVE (existing)
 ════════════════════════════════════════ */
 
@@ -3789,13 +3959,59 @@ textarea {
   margin-top: 18px;
   display: grid;
   gap: 10px;
-  max-width: 70%;
+  max-width: 72%;
 }
 
 .client-card__body p {
   font-size: clamp(15px, 1.15vw, 22px);
   font-weight: 600;
   line-height: 1.3;
+}
+
+.client-card__qr {
+  display: grid;
+  gap: 8px;
+  justify-items: start;
+  margin-top: 8px;
+}
+
+.client-card__qr-frame {
+  display: grid;
+  place-items: center;
+  width: 146px;
+  height: 146px;
+  padding: 10px;
+  border-radius: 18px;
+  background: linear-gradient(180deg, #ffffff 0%, #f5f8ff 100%);
+  border: 1px solid rgba(140, 156, 194, 0.45);
+  box-shadow: 0 14px 26px rgba(0, 0, 0, 0.18);
+}
+
+.client-card__qr-image {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+.client-card__qr-fallback {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  border-radius: 12px;
+  background: #eef3ff;
+  color: #0b1b44;
+  font-size: 13px;
+  font-weight: 700;
+  text-align: center;
+  padding: 10px;
+}
+
+.client-card__qr-caption {
+  color: #b8c9ec;
+  font-size: 14px;
+  font-weight: 600;
 }
 
 .client-card__brand {

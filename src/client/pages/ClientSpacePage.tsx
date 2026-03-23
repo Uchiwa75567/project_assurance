@@ -2,6 +2,7 @@ import type { FC } from 'react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import L from 'leaflet';
+import QRCode from 'qrcode';
 import {
   Circle,
   LayersControl,
@@ -93,6 +94,100 @@ const formatDate = (value?: string | null) => {
     month: '2-digit',
     year: 'numeric',
   }).format(date);
+};
+
+const isImageSource = (value: string) => /^(data:image\/|https?:\/\/|\/)/i.test(value);
+
+type DigitalQrCodeProps = {
+  qrCode?: string | null;
+  payload: string;
+  label: string;
+};
+
+const DigitalQrCode: FC<DigitalQrCodeProps> = ({ qrCode, payload, label }) => {
+  const [src, setSrc] = useState<string | null>(null);
+  const [status, setStatus] = useState<'loading' | 'ready' | 'error'>('loading');
+
+  useEffect(() => {
+    let active = true;
+
+    const resolveQr = async () => {
+      setStatus('loading');
+
+      if (qrCode?.trim()) {
+        if (isImageSource(qrCode.trim())) {
+          if (active) {
+            setSrc(qrCode.trim());
+            setStatus('ready');
+          }
+          return;
+        }
+
+        try {
+          const generated = await QRCode.toDataURL(qrCode.trim(), {
+            errorCorrectionLevel: 'M',
+            margin: 1,
+            width: 220,
+            color: {
+              dark: '#06143a',
+              light: '#ffffff',
+            },
+          });
+
+          if (active) {
+            setSrc(generated);
+            setStatus('ready');
+          }
+          return;
+        } catch {
+          // Fallback to payload below.
+        }
+      }
+
+      try {
+        const generated = await QRCode.toDataURL(payload, {
+          errorCorrectionLevel: 'M',
+          margin: 1,
+          width: 220,
+          color: {
+            dark: '#06143a',
+            light: '#ffffff',
+          },
+        });
+
+        if (active) {
+          setSrc(generated);
+          setStatus('ready');
+        }
+      } catch {
+        if (active) {
+          setSrc(null);
+          setStatus('error');
+        }
+      }
+    };
+
+    void resolveQr();
+
+    return () => {
+      active = false;
+    };
+  }, [payload, qrCode]);
+
+  return (
+    <div className="client-card__qr">
+      <div className="client-card__qr-frame">
+        {status === 'ready' && src ? (
+          <img src={src} alt={label} className="client-card__qr-image" />
+        ) : (
+          <div className="client-card__qr-fallback">
+            {status === 'error' ? 'QR indisponible' : 'Génération du QR...'}
+          </div>
+        )}
+      </div>
+      <p className="client-card__qr-caption">Présentez ce QR à l’accueil</p>
+    </div>
+  );
 };
 
 const nearbyHospitals: Hospital[] = [
@@ -551,6 +646,7 @@ const ClientSpacePage: FC = () => {
   const cardStatus = carte?.statut === 'EXPIRED' ? 'Expiree' : 'Active';
   const cardValidity = formatDate(carte?.dateExpiration);
   const cardPackLabel = packLabel ?? clientProfile?.typeAssurance ?? 'N/A';
+  const qrPayload = clientProfile?.numeroAssurance ?? carte?.numeroCarte ?? displayName;
 
   return (
     <div className="client-space">
@@ -591,10 +687,10 @@ const ClientSpacePage: FC = () => {
               <p>Numero Carte : {carte?.numeroCarte ?? 'N/A'}</p>
               <p>Formule : {cardPackLabel}</p>
               <p>Validite : {cardValidity}</p>
-              <img
-                src={carte?.qrCode ?? '/client/qr-placeholder.svg'}
-                alt="QR code assurance"
-                style={{ width: 90, height: 90, objectFit: 'contain', marginTop: 8 }}
+              <DigitalQrCode
+                qrCode={carte?.qrCode}
+                payload={qrPayload}
+                label={`QR code assurance de ${displayName}`}
               />
             </div>
 

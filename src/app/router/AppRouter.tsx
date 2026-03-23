@@ -8,6 +8,8 @@ import { ROUTES } from '../../shared/constants/routes';
 const HomePage = lazy(() => import('../../pages/HomePage'));
 const LoginPage = lazy(() => import('../../pages/LoginPage'));
 const RegisterPage = lazy(() => import('../../pages/RegisterPage'));
+const OtpVerificationPage = lazy(() => import('../../pages/OtpVerificationPage'));
+const OtpSuccessPage = lazy(() => import('../../pages/OtpSuccessPage'));
 const ClientSpacePage = lazy(() => import('../../client/pages/ClientSpacePage'));
 const DashboardPage = lazy(() => import('../../admin/pages/DashboardPage'));
 const GestionClientsPage = lazy(() => import('../../admin/pages/GestionClientsPage'));
@@ -28,6 +30,8 @@ const AppRouter: FC = () => {
         <Route path={ROUTES.home} element={<HomePage />} />
         <Route path={ROUTES.login} element={<LoginPage />} />
         <Route path={ROUTES.register} element={<RegisterPage />} />
+        <Route path={ROUTES.registerOtp} element={<OtpVerificationPage />} />
+        <Route path={ROUTES.registerOtpSuccess} element={<OtpSuccessPage />} />
 
         <Route
           path={ROUTES.client}

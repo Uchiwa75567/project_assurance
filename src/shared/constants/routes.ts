@@ -2,6 +2,8 @@ export const ROUTES = {
   home: '/',
   login: '/connexion',
   register: '/inscription',
+  registerOtp: '/inscription/otp',
+  registerOtpSuccess: '/inscription/otp/succes',
   client: '/client',
   agent: '/agent',
   agentDashboard: '/agent/dashboard',

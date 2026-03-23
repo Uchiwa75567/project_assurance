@@ -8,6 +8,7 @@ import { ApiError } from '../services/api/httpClient';
 import { ROUTES } from '../shared/constants/routes';
 
 type RegisterFormData = {
+  email: string;
   nomComplet: string;
   dateNaissance: string;
   numeroDeTelephone: string;
@@ -15,14 +16,6 @@ type RegisterFormData = {
   photo?: FileList;
   motDePasse: string;
 };
-
-const readFileAsDataUrl = (file: File) =>
-  new Promise<string>((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result as string);
-    reader.onerror = () => reject(new Error('Impossible de lire la photo'));
-    reader.readAsDataURL(file);
-  });
 
 const RegisterPage: FC = () => {
   const navigate = useNavigate();
@@ -39,10 +32,11 @@ const RegisterPage: FC = () => {
   const onSubmit = async (data: RegisterFormData) => {
     try {
       const photoFile = data.photo?.[0];
-      const photoUrl = photoFile ? await readFileAsDataUrl(photoFile) : null;
+      const photoUrl = photoFile ? (await authApi.uploadPhoto(photoFile)).imageUrl : null;
 
       await authApi.register({
         fullName: data.nomComplet,
+        email: data.email || null,
         dateNaissance: data.dateNaissance || null,
         telephone: data.numeroDeTelephone || null,
         numeroCni: data.numeroDIdentite || null,
@@ -50,7 +44,9 @@ const RegisterPage: FC = () => {
         password: data.motDePasse,
         role: 'CLIENT',
       });
-      navigate(ROUTES.login);
+
+      // Redirect to OTP verification with the email as state
+      navigate(ROUTES.registerOtp, { state: { email: data.email } });
     } catch (e) {
       if (e instanceof ApiError) setError(e.message);
       else setError('Inscription impossible. Verifie que le backend est lance.');
@@ -74,6 +70,14 @@ const RegisterPage: FC = () => {
               placeholder="Entrez votre nom complet"
               className="login-input"
               autoComplete="name"
+            />
+
+            <input
+              {...register('email')}
+              type="email"
+              placeholder="Adresse e-mail"
+              className="login-input"
+              autoComplete="email"
             />
 
             <input

@@ -1,5 +1,4 @@
 import { httpClient } from '../../../services/api/httpClient';
-import type { ApiEnvelope } from '../../../shared/types/api.types';
 
 export interface Client {
   id: string;
