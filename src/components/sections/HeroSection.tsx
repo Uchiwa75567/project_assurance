@@ -19,7 +19,15 @@ const HeroSection: FC = () => {
             <button className="btn-hero">S’inscrire</button>
           </div>
 
-          <div className="hero-notch" />
+          <div className="scroll-indicator" aria-label="Défiler vers le bas">
+            <div className="scroll-indicator__mouse">
+              <div className="scroll-indicator__dot" />
+            </div>
+            <div className="scroll-indicator__chevrons">
+              <span />
+              <span />
+            </div>
+          </div>
         </div>
       </div>
     </section>

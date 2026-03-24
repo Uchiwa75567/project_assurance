@@ -1,5 +1,5 @@
 import type { FC } from 'react';
-import AboutImage from '../../assets/images/logo.png';
+import AboutImage from '../../assets/images/about-hands-circle.png';
 
 const AboutSection: FC = () => {
   return (
