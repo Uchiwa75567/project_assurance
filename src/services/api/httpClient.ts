@@ -29,9 +29,11 @@ async function ensureCsrfCookie(): Promise<string | null> {
 
   if (!response.ok) return null;
 
-  // For Spring Security CookieCsrfTokenRepository, the canonical token source
-  // for SPA requests is the XSRF-TOKEN cookie value.
-  const token = getCookie('XSRF-TOKEN');
+  const payload = (await response.json().catch(() => null)) as
+    | { data?: { token?: string }; token?: string }
+    | null;
+
+  const token = payload?.data?.token ?? payload?.token ?? getCookie('XSRF-TOKEN');
   csrfTokenCache = token ?? null;
   return csrfTokenCache;
 }
