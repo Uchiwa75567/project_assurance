@@ -1,9 +1,23 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { API_BASE_URL } from '../../../services/api/httpClient';
 import { agentApi } from '../services/agentApi';
 import type { AgentLiveLocation } from '../types/agent.types';
 
-const WS_URL = import.meta.env.VITE_WS_URL ?? 'ws://localhost:8080/ws/agent-locations';
+function buildWsUrl(): string {
+  const explicit = import.meta.env.VITE_WS_URL;
+  if (explicit) return explicit;
+
+  try {
+    const baseUrl = new URL(API_BASE_URL, window.location.origin);
+    const wsProtocol = baseUrl.protocol === 'https:' ? 'wss:' : 'ws:';
+    return `${wsProtocol}//${baseUrl.host}/ws/agent-locations`;
+  } catch {
+    return 'ws://localhost:8080/ws/agent-locations';
+  }
+}
+
+const WS_URL = buildWsUrl();
 
 export function useAdminLiveAgents() {
   const [isConnected, setIsConnected] = useState(false);
