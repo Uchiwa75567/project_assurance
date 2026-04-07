@@ -87,7 +87,7 @@ async function request<T>(path: string, init?: RequestOptions): Promise<T> {
   }
 
   if (!response.ok) {
-    throw new ApiError(parsed?.message ?? `HTTP ${response.status}`, response.status, parsed);
+    throw new ApiError(parsed?.message ?? 'Une erreur est survenue.', response.status, parsed);
   }
 
   return (parsed?.data ?? null) as T;

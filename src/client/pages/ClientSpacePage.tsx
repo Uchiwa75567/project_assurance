@@ -15,9 +15,6 @@ import {
   useMap,
 } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
-import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
-import markerIcon from 'leaflet/dist/images/marker-icon.png';
-import markerShadow from 'leaflet/dist/images/marker-shadow.png';
 import { authApi } from '../../features/auth/services/authApi';
 import { clientApi } from '../../features/clients/services/clientApi';
 import type { Client } from '../../features/clients/types/client.types';
@@ -28,6 +25,8 @@ import { souscriptionApi } from '../../features/souscriptions/services/souscript
 import type { Souscription } from '../../features/souscriptions/types/souscription.types';
 import { carteApi } from '../../features/cartes/services/carteApi';
 import type { Carte } from '../../features/cartes/types/carte.types';
+import { partenaireApi } from '../../features/partenaires/services/partenaireApi';
+import type { Partenaire } from '../../features/partenaires/types/partenaire.types';
 import { useAuthStore } from '../../store/authStore';
 import { ROUTES } from '../../shared/constants/routes';
 import { ASSETS } from '../../shared/constants/assets';
@@ -38,7 +37,8 @@ type Hospital = {
   name: string;
   position: [number, number];
   address: string;
-  distanceKm: number;
+  distanceKm: number | null;
+  telephone?: string | null;
 };
 
 type DeviceOrientationEventWithCompass = DeviceOrientationEvent & {
@@ -79,6 +79,22 @@ const bearingToCardinal = (bearing: number) => {
   const index = Math.round(bearing / 45) % 8;
   return directions[index];
 };
+
+const formatDistanceKm = (distanceKm: number | null) => {
+  if (distanceKm === null || Number.isNaN(distanceKm)) {
+    return 'Distance N/A';
+  }
+
+  return `${distanceKm.toFixed(1)} km`;
+};
+
+const escapeHtml = (value: string) =>
+  value
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#039;');
 
 const angleDiff = (a: number, b: number) => {
   const diff = Math.abs(a - b) % 360;
@@ -190,10 +206,10 @@ const DigitalQrCode: FC<DigitalQrCodeProps> = ({ qrCode, payload, label }) => {
   );
 };
 
-const nearbyHospitals: Hospital[] = [
+const fallbackHospitals: Hospital[] = [
   {
     id: 'h1',
-    label: 'Hopital 1',
+    label: 'Hopital',
     name: 'Hopital Principal de Dakar',
     position: [14.6708, -17.4352],
     address: 'Avenue Nelson Mandela, Dakar',
@@ -201,7 +217,7 @@ const nearbyHospitals: Hospital[] = [
   },
   {
     id: 'h2',
-    label: 'Hopital 2',
+    label: 'Hopital',
     name: 'Centre Hospitalier National de Fann',
     position: [14.6924, -17.4552],
     address: 'Fann Residence, Dakar',
@@ -209,7 +225,7 @@ const nearbyHospitals: Hospital[] = [
   },
   {
     id: 'h3',
-    label: 'Hopital 3',
+    label: 'Hopital',
     name: 'Hopital Aristide Le Dantec',
     position: [14.6732, -17.4385],
     address: 'Avenue Pasteur, Dakar',
@@ -217,48 +233,80 @@ const nearbyHospitals: Hospital[] = [
   },
 ];
 
-const defaultHospitalMarkerIcon = L.icon({
-  iconRetinaUrl: markerIcon2x,
-  iconUrl: markerIcon,
-  shadowUrl: markerShadow,
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
-  popupAnchor: [1, -34],
-  shadowSize: [41, 41],
-});
+const isHospitalPartner = (type: string) => {
+  const normalized = type.trim().toLowerCase();
+  return normalized.includes('hop') || normalized.includes('hospital') || normalized.includes('centre');
+};
 
-const getHospitalMarkerIcon = (isSelected: boolean) => {
-  if (!isSelected) return defaultHospitalMarkerIcon;
+const toHospital = (partner: Partenaire, userPosition: [number, number] | null): Hospital | null => {
+  if (typeof partner.latitude !== 'number' || typeof partner.longitude !== 'number') {
+    return null;
+  }
 
-  return L.divIcon({
-    className: 'hospital-selected-icon',
-    html: `
-      <div style="
-        position: relative;
-        width: 24px;
-        height: 24px;
-        border-radius: 999px;
-        background: #ef4444;
-        border: 2px solid #ffffff;
-        box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.25);
-      ">
-        <div style="position:absolute;left:50%;top:50%;width:10px;height:2px;background:#fff;transform:translate(-50%,-50%);"></div>
-        <div style="position:absolute;left:50%;top:50%;width:2px;height:10px;background:#fff;transform:translate(-50%,-50%);"></div>
-      </div>
-    `,
-    iconSize: [24, 24],
-    iconAnchor: [12, 12],
-    popupAnchor: [0, -12],
+  return {
+    id: partner.id,
+    label: partner.type?.trim() ? partner.type.trim() : 'Hopital',
+    name: partner.nom,
+    position: [partner.latitude, partner.longitude],
+    address: partner.adresse?.trim() || 'Adresse indisponible',
+    distanceKm: userPosition ? getDistanceKm(userPosition, [partner.latitude, partner.longitude]) : partner.distanceKm ?? null,
+    telephone: partner.telephone ?? null,
+  };
+};
+
+const hospitalKey = (hospital: Hospital) =>
+  [
+    hospital.name.trim().toLowerCase(),
+    hospital.address.trim().toLowerCase(),
+    hospital.position[0].toFixed(5),
+    hospital.position[1].toFixed(5),
+  ].join('|');
+
+const uniqueHospitals = (hospitals: Hospital[]) => {
+  const seen = new Set<string>();
+
+  return hospitals.filter((hospital) => {
+    const key = hospitalKey(hospital);
+    if (seen.has(key)) {
+      return false;
+    }
+    seen.add(key);
+    return true;
   });
 };
 
-const getUserArrowIcon = (angleDeg: number, isHeadingCorrect: boolean | null) => {
-  const arrowColor = isHeadingCorrect === null ? '#0a6cff' : isHeadingCorrect ? '#16a34a' : '#dc2626';
+const getHospitalMarkerIcon = (hospital: Hospital, isSelected: boolean) => {
+  const badge = isSelected ? 'HOPITAL CHOISI' : 'HOPITAL';
+  const subtitle = hospital.name.length > 30 ? `${hospital.name.slice(0, 27)}...` : hospital.name;
+  const iconWidth = isSelected ? 128 : 112;
+  const iconHeight = isSelected ? 68 : 60;
+  const anchorX = Math.round(iconWidth / 2);
+  const anchorY = iconHeight - 4;
+
+  return L.divIcon({
+    className: 'hospital-sticker-wrap',
+    html: `
+      <div class="hospital-sticker${isSelected ? ' hospital-sticker--selected' : ''}">
+        <div class="hospital-sticker__badge">${escapeHtml(badge)}</div>
+        <div class="hospital-sticker__name">${escapeHtml(subtitle)}</div>
+        <div class="hospital-sticker__pin">
+          <span></span>
+        </div>
+      </div>
+    `,
+    iconSize: [iconWidth, iconHeight],
+    iconAnchor: [anchorX, anchorY],
+    popupAnchor: [0, -52],
+  });
+};
+
+const getUserArrowIcon = (isHeadingCorrect: boolean | null) => {
+  const dotColor = isHeadingCorrect === null ? '#0a6cff' : isHeadingCorrect ? '#16a34a' : '#dc2626';
 
   return L.divIcon({
     className: 'user-direction-icon',
     html: `
-      <div style="position: relative; width: 30px; height: 30px;">
+      <div style="position: relative; width: 24px; height: 24px;">
         <style>
           @keyframes msUserPulse {
             0% { transform: scale(0.9); opacity: 0.8; }
@@ -268,58 +316,30 @@ const getUserArrowIcon = (angleDeg: number, isHeadingCorrect: boolean | null) =>
         </style>
         <div style="
           position: absolute;
-          left: 5px;
-          top: 5px;
-          width: 20px;
-          height: 20px;
+          left: 4px;
+          top: 4px;
+          width: 16px;
+          height: 16px;
           border-radius: 999px;
-          background: rgba(10, 108, 255, 0.25);
+          background: rgba(10, 108, 255, 0.22);
           animation: msUserPulse 1.6s infinite;
         "></div>
         <div style="
           position: absolute;
-          left: 7px;
-          top: 7px;
-          width: 16px;
-          height: 16px;
+          left: 6px;
+          top: 6px;
+          width: 12px;
+          height: 12px;
           border-radius: 999px;
-          background: #0a6cff;
+          background: ${dotColor};
           border: 2px solid #ffffff;
-          box-shadow: 0 0 0 2px rgba(10, 108, 255, 0.25);
-        "></div>
-        <div style="
-          position: absolute;
-          left: 15px;
-          top: 15px;
-          width: 0;
-          height: 0;
-          transform: rotate(${Math.round(angleDeg)}deg);
-          transform-origin: 0 0;
+          box-shadow: 0 0 0 2px rgba(10, 108, 255, 0.22);
         ">
-          <div style="
-            position: absolute;
-            left: -1px;
-            top: -14px;
-            width: 2px;
-            height: 14px;
-            background: ${arrowColor};
-          "></div>
-          <div style="
-            position: absolute;
-            left: -5px;
-            top: -22px;
-            width: 0;
-            height: 0;
-            border-left: 5px solid transparent;
-            border-right: 5px solid transparent;
-            border-bottom: 10px solid ${arrowColor};
-            filter: drop-shadow(0 0 3px rgba(0,0,0,0.25));
-          "></div>
         </div>
       </div>
     `,
-    iconSize: [30, 30],
-    iconAnchor: [15, 15],
+    iconSize: [24, 24],
+    iconAnchor: [12, 12],
   });
 };
 
@@ -327,11 +347,14 @@ const MapFitBounds: FC<{
   userPosition: [number, number] | null;
   hospitalPosition: [number, number];
   routeCoords: [number, number][];
-}> = ({ userPosition, hospitalPosition, routeCoords }) => {
+  isCompactMap: boolean;
+}> = ({ userPosition, hospitalPosition, routeCoords, isCompactMap }) => {
   const map = useMap();
 
   useEffect(() => {
-    if (userPosition) return;
+    if (isCompactMap) {
+      return;
+    }
 
     const points = routeCoords.length > 1
       ? routeCoords
@@ -345,12 +368,12 @@ const MapFitBounds: FC<{
     }
 
     map.fitBounds(points, { padding: [40, 40], maxZoom: 15 });
-  }, [map, userPosition, hospitalPosition, routeCoords]);
+  }, [map, userPosition, hospitalPosition, routeCoords, isCompactMap]);
 
   return null;
 };
 
-const MapFollowUser: FC<{ userPosition: [number, number] | null }> = ({ userPosition }) => {
+const MapFollowUser: FC<{ userPosition: [number, number] | null; isCompactMap: boolean }> = ({ userPosition, isCompactMap }) => {
   const map = useMap();
   const didInitRef = useRef(false);
 
@@ -363,8 +386,12 @@ const MapFollowUser: FC<{ userPosition: [number, number] | null }> = ({ userPosi
       return;
     }
 
+    if (isCompactMap) {
+      return;
+    }
+
     map.flyTo(userPosition, map.getZoom(), { duration: 0.7 });
-  }, [map, userPosition]);
+  }, [map, userPosition, isCompactMap]);
 
   return null;
 };
@@ -372,11 +399,13 @@ const MapFollowUser: FC<{ userPosition: [number, number] | null }> = ({ userPosi
 const ClientSpacePage: FC = () => {
   const navigate = useNavigate();
   const logout = useAuthStore((s) => s.logout);
-  const [selectedHospitalId, setSelectedHospitalId] = useState(nearbyHospitals[0].id);
+  const [selectedHospitalId, setSelectedHospitalId] = useState<string | null>(null);
   const [userPosition, setUserPosition] = useState<[number, number] | null>(null);
   const [geolocationError, setGeolocationError] = useState<string | null>(null);
   const [routeCoords, setRouteCoords] = useState<[number, number][]>([]);
   const [isLoadingRoute, setIsLoadingRoute] = useState(false);
+  const [hospitalCandidates, setHospitalCandidates] = useState<Hospital[]>(fallbackHospitals);
+  const [isLoadingHospitals, setIsLoadingHospitals] = useState(false);
   const [distanceToHospitalKm, setDistanceToHospitalKm] = useState<number | null>(null);
   const [locationAccuracyM, setLocationAccuracyM] = useState<number | null>(null);
   const [speedKmh, setSpeedKmh] = useState<number | null>(null);
@@ -386,16 +415,32 @@ const ClientSpacePage: FC = () => {
   const [isHeadingCorrect, setIsHeadingCorrect] = useState<boolean | null>(null);
   const [movementTrail, setMovementTrail] = useState<[number, number][]>([]);
   const previousUserPositionRef = useRef<[number, number] | null>(null);
+  const lastHospitalQueryCenterRef = useRef<[number, number] | null>(null);
+  const lastUserPositionRef = useRef<[number, number] | null>(null);
+  const [isCompactMap, setIsCompactMap] = useState(false);
 
   const selectedHospital = useMemo(
-    () => nearbyHospitals.find((hospital) => hospital.id === selectedHospitalId) ?? nearbyHospitals[0],
-    [selectedHospitalId]
+    () => hospitalCandidates.find((hospital) => hospital.id === selectedHospitalId) ?? hospitalCandidates[0] ?? fallbackHospitals[0],
+    [hospitalCandidates, selectedHospitalId]
   );
-  const userArrowAngle = deviceHeading ?? movementBearing ?? targetBearing ?? 0;
+  const topHospitals = useMemo(() => hospitalCandidates.slice(0, 3), [hospitalCandidates]);
   const userArrowIcon = useMemo(
-    () => getUserArrowIcon(userArrowAngle, isHeadingCorrect),
-    [userArrowAngle, isHeadingCorrect]
+    () => getUserArrowIcon(isHeadingCorrect),
+    [isHeadingCorrect]
   );
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(max-width: 768px)');
+    const syncIsCompactMap = () => {
+      setIsCompactMap(mediaQuery.matches);
+    };
+
+    syncIsCompactMap();
+    mediaQuery.addEventListener('change', syncIsCompactMap);
+    return () => {
+      mediaQuery.removeEventListener('change', syncIsCompactMap);
+    };
+  }, []);
 
   useEffect(() => {
     if (!navigator.geolocation) {
@@ -406,6 +451,15 @@ const ClientSpacePage: FC = () => {
     const watchId = navigator.geolocation.watchPosition(
       (position) => {
         const nextPosition: [number, number] = [position.coords.latitude, position.coords.longitude];
+        const lastKnownPosition = lastUserPositionRef.current;
+        const movedKm = lastKnownPosition ? getDistanceKm(lastKnownPosition, nextPosition) : Number.POSITIVE_INFINITY;
+        const minMoveKm = isCompactMap ? 0.03 : 0.01;
+
+        if (lastKnownPosition && movedKm < minMoveKm) {
+          return;
+        }
+
+        lastUserPositionRef.current = nextPosition;
         setUserPosition(nextPosition);
         setLocationAccuracyM(position.coords.accuracy ?? null);
         setSpeedKmh(position.coords.speed !== null ? Math.max(position.coords.speed * 3.6, 0) : null);
@@ -431,6 +485,103 @@ const ClientSpacePage: FC = () => {
       navigator.geolocation.clearWatch(watchId);
     };
   }, []);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadHospitals = async () => {
+      const queryCenter = userPosition;
+
+      if (
+        queryCenter &&
+        lastHospitalQueryCenterRef.current &&
+        getDistanceKm(lastHospitalQueryCenterRef.current, queryCenter) < 0.5
+      ) {
+        return;
+      }
+
+      setIsLoadingHospitals(true);
+
+      try {
+        const data = queryCenter
+          ? await partenaireApi.list({ lat: queryCenter[0], lon: queryCenter[1] })
+          : await partenaireApi.list();
+
+        const hospitals = data
+          .filter((partner) => partner.actif !== false)
+          .filter((partner) => isHospitalPartner(partner.type))
+          .map((partner) => toHospital(partner, queryCenter))
+          .filter((hospital): hospital is Hospital => Boolean(hospital))
+          .sort((a, b) => {
+            const aDistance = a.distanceKm ?? Number.POSITIVE_INFINITY;
+            const bDistance = b.distanceKm ?? Number.POSITIVE_INFINITY;
+            return aDistance - bDistance;
+          });
+
+        const mergedCandidates = uniqueHospitals([
+          ...hospitals,
+          ...fallbackHospitals.map((hospital) => ({
+            ...hospital,
+            distanceKm: queryCenter ? getDistanceKm(queryCenter, hospital.position) : hospital.distanceKm,
+          })),
+        ]).sort((a, b) => {
+          const aDistance = a.distanceKm ?? Number.POSITIVE_INFINITY;
+          const bDistance = b.distanceKm ?? Number.POSITIVE_INFINITY;
+          return aDistance - bDistance;
+        });
+
+        if (isMounted && mergedCandidates.length > 0) {
+          setHospitalCandidates(mergedCandidates.slice(0, 3));
+          lastHospitalQueryCenterRef.current = queryCenter;
+          return;
+        }
+      } catch {
+        // fallback below
+      } finally {
+        if (isMounted) {
+          setIsLoadingHospitals(false);
+        }
+      }
+
+      const fallback = fallbackHospitals
+        .map((hospital) => ({
+          ...hospital,
+          distanceKm: queryCenter ? getDistanceKm(queryCenter, hospital.position) : hospital.distanceKm,
+        }))
+        .filter((hospital) => uniqueHospitals([hospital]).length > 0)
+        .sort((a, b) => {
+          const aDistance = a.distanceKm ?? Number.POSITIVE_INFINITY;
+          const bDistance = b.distanceKm ?? Number.POSITIVE_INFINITY;
+          return aDistance - bDistance;
+        });
+
+      if (isMounted) {
+        setHospitalCandidates(fallback.slice(0, 3));
+        lastHospitalQueryCenterRef.current = queryCenter;
+      }
+    };
+
+    void loadHospitals();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [userPosition]);
+
+  useEffect(() => {
+    if (topHospitals.length === 0) {
+      setSelectedHospitalId(null);
+      return;
+    }
+
+    setSelectedHospitalId((current) => {
+      if (current && topHospitals.some((hospital) => hospital.id === current)) {
+        return current;
+      }
+
+      return topHospitals[0].id;
+    });
+  }, [topHospitals]);
 
   useEffect(() => {
     const handleOrientation = (event: DeviceOrientationEventWithCompass) => {
@@ -731,7 +882,7 @@ const ClientSpacePage: FC = () => {
         <section className="client-partners">
           <h2>Partenaires</h2>
           <p className="client-partners__intro">
-            Les 3 hopitaux les plus proches sont affiches sur la carte. Clique sur un hopital pour voir sa position exacte.
+            Les 3 hopitaux les plus proches sont affiches sur la carte. Clique sur un hopital pour voir sa position exacte et le trajet calcule en temps reel.
           </p>
           <p className="client-partners__intro">
             {userPosition
@@ -740,6 +891,11 @@ const ClientSpacePage: FC = () => {
                 ? `Position utilisateur indisponible: ${geolocationError}`
                 : 'Recuperation de votre position exacte...'}
           </p>
+          {isLoadingHospitals && (
+            <p className="client-partners__intro">
+              Recherche des hopitaux les plus proches...
+            </p>
+          )}
           {userPosition && (
             <p className="client-partners__intro">
               {isLoadingRoute
@@ -765,7 +921,7 @@ const ClientSpacePage: FC = () => {
 
           <div className="client-partners__layout">
             <div className="client-partners__list">
-              {nearbyHospitals.map((hospital) => (
+              {topHospitals.map((hospital) => (
                 <button
                   key={hospital.id}
                   type="button"
@@ -777,7 +933,7 @@ const ClientSpacePage: FC = () => {
                   </span>
                   <span className="client-partners__item-name">{hospital.name}</span>
                   <span className="client-partners__item-meta">
-                    {hospital.distanceKm.toFixed(1)} km - {hospital.address}
+                    {formatDistanceKm(hospital.distanceKm)} - {hospital.address}
                   </span>
                 </button>
               ))}
@@ -790,11 +946,12 @@ const ClientSpacePage: FC = () => {
                 className="client-partners__map"
                 scrollWheelZoom
               >
-                <MapFollowUser userPosition={userPosition} />
+                <MapFollowUser userPosition={userPosition} isCompactMap={isCompactMap} />
                 <MapFitBounds
                   userPosition={userPosition}
                   hospitalPosition={selectedHospital.position}
                   routeCoords={routeCoords}
+                  isCompactMap={isCompactMap}
                 />
                 <ScaleControl position="bottomleft" />
                 <LayersControl position="topright">
@@ -824,8 +981,6 @@ const ClientSpacePage: FC = () => {
                       <strong>Votre position</strong>
                       <br />
                       Coordonnees: {userPosition[0].toFixed(5)}, {userPosition[1].toFixed(5)}
-                      <br />
-                      Cap: {bearingToCardinal(userArrowAngle)} ({Math.round(userArrowAngle)}deg)
                     </Popup>
                   </Marker>
                 )}
@@ -837,11 +992,11 @@ const ClientSpacePage: FC = () => {
                   />
                 )}
 
-                {nearbyHospitals.map((hospital) => (
+                {topHospitals.map((hospital) => (
                   <Marker
                     key={hospital.id}
                     position={hospital.position}
-                    icon={getHospitalMarkerIcon(hospital.id === selectedHospitalId)}
+                    icon={getHospitalMarkerIcon(hospital, hospital.id === selectedHospitalId)}
                   >
                     <Popup>
                       <strong>{hospital.label}</strong>
@@ -849,6 +1004,12 @@ const ClientSpacePage: FC = () => {
                       {hospital.name}
                       <br />
                       {hospital.address}
+                      {hospital.telephone ? (
+                        <>
+                          <br />
+                          Tel: {hospital.telephone}
+                        </>
+                      ) : null}
                       <br />
                       Coordonnees: {hospital.position[0].toFixed(4)}, {hospital.position[1].toFixed(4)}
                     </Popup>

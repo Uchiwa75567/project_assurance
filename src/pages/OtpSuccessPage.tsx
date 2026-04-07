@@ -21,19 +21,16 @@ const OtpSuccessPage: FC = () => {
       {/* Right panel */}
       <div className="login-right">
         <div className="otp-success-wrap">
-          <img
-            src="/otp-success-check.svg"
-            alt="Compte vérifié avec succès"
-            className="otp-success-icon"
-          />
+          <div className="otp-success-icon-wrap" aria-hidden="true">
+            <img
+              src="/otp-success-check.svg"
+              alt=""
+              className="otp-success-icon"
+            />
+          </div>
 
-          <p className="otp-success-text">
-            Code vérifié avec succès !
-          </p>
-
-          <p className="otp-success-subtext">
-            Votre code OTP a été vérifié avec succès.
-          </p>
+          <p className="otp-success-text">Code vérifié avec succès !</p>
+          <p className="otp-success-subtext">Votre code OTP a été vérifié avec succès.</p>
 
           <button
             type="button"

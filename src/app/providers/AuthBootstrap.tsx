@@ -10,14 +10,15 @@ const AuthBootstrap = () => {
 
   useEffect(() => {
     const bootstrap = async () => {
+      if (!role) {
+        setBootstrapped(true);
+        return;
+      }
+
       try {
         const current = await authApi.me();
         setSession(current);
       } catch {
-        if (!role) {
-          setBootstrapped(true);
-          return;
-        }
         try {
           const refreshed = await authApi.refresh();
           setSession(refreshed);

@@ -6,8 +6,8 @@ import Logo from '../assets/images/logo.png';
 import { authApi } from '../features/auth/services/authApi';
 import { useAuthStore } from '../store/authStore';
 import ErrorBanner from '../shared/components/ErrorBanner';
-import { ApiError } from '../services/api/httpClient';
 import { ROUTES } from '../shared/constants/routes';
+import { formatFriendlyApiError } from '../shared/utils/apiErrorMessages';
 
 type LoginFormData = {
   identifiant: string;
@@ -17,13 +17,15 @@ type LoginFormData = {
 const LoginPage: FC = () => {
   const navigate = useNavigate();
   const setSession = useAuthStore((s) => s.setSession);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<{ message: string; tone: 'danger' | 'warning' | 'neutral'; retryable: boolean } | null>(null);
+  const [lastAttempt, setLastAttempt] = useState<LoginFormData | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const { register, handleSubmit } = useForm<LoginFormData>();
 
-  const onSubmit = async (data: LoginFormData) => {
+  const submitLogin = async (data: LoginFormData) => {
     setIsSubmitting(true);
+    setError(null);
     try {
       const session = await authApi.login(data.identifiant, data.motDePasse);
       setSession(session);
@@ -36,11 +38,15 @@ const LoginPage: FC = () => {
         navigate(ROUTES.client);
       }
     } catch (e) {
-      if (e instanceof ApiError) setError(e.message);
-      else setError("Connexion impossible. Verifie l'identifiant et le mot de passe.");
+      setError(formatFriendlyApiError(e));
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const onSubmit = async (data: LoginFormData) => {
+    setLastAttempt(data);
+    await submitLogin(data);
   };
 
   return (
@@ -62,6 +68,15 @@ const LoginPage: FC = () => {
             <span aria-hidden="true">←</span> Retour a l'accueil
           </button>
           <h1 className="login-title">Se connecter</h1>
+
+          {error && (
+            <ErrorBanner
+              message={error.message}
+              tone={error.tone}
+              actionLabel={error.retryable && lastAttempt ? 'Réessayer' : undefined}
+              onAction={error.retryable && lastAttempt ? () => void submitLogin(lastAttempt) : undefined}
+            />
+          )}
 
           <form onSubmit={handleSubmit(onSubmit)} className="login-form" noValidate>
             <input
@@ -100,8 +115,6 @@ const LoginPage: FC = () => {
                 )}
               </button>
             </div>
-
-            {error && <ErrorBanner message={error} />}
 
             <button type="submit" className="login-submit" disabled={isSubmitting}>
               {isSubmitting ? 'Connexion...' : 'Se connecter'}
