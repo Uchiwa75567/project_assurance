@@ -4244,12 +4244,21 @@ textarea {
 .client-card {
   position: relative;
   overflow: hidden;
-  border-radius: 24px;
+  border-radius: 34px;
   border: 4px solid rgba(112, 122, 148, 0.65);
-  background: #01123f;
+  background: linear-gradient(180deg, #07142f 0%, #041126 100%);
   color: #d8e6ff;
-  padding: 22px 22px 66px;
-  min-height: 320px;
+  padding: 32px 34px 96px;
+  min-height: 400px;
+  box-shadow: 0 24px 48px rgba(2, 8, 24, 0.18);
+}
+
+.client-card--active {
+  background: linear-gradient(180deg, #07142f 0%, #041126 100%);
+}
+
+.client-card--inactive {
+  background: linear-gradient(180deg, #07142f 0%, #041126 100%);
 }
 
 .client-card__top {
@@ -4260,35 +4269,45 @@ textarea {
 }
 
 .client-card__top h2 {
-  color: #f3f7ff;
-  font-size: clamp(28px, 2.1vw, 40px);
-  font-weight: 700;
+  color: #f6f8ff;
+  font-size: clamp(36px, 4vw, 72px);
+  font-weight: 800;
+  line-height: 1.02;
+  letter-spacing: -0.03em;
 }
 
 .client-card__status {
-  color: #00ff76;
-  font-size: clamp(20px, 1.7vw, 32px);
-  font-weight: 700;
+  font-size: clamp(24px, 2.6vw, 48px);
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.03em;
+}
+
+.client-card__status--active {
+  color: #19ff6f;
+}
+
+.client-card__status--inactive {
+  color: #ff3b18;
 }
 
 .client-card__body {
-  margin-top: 18px;
+  margin-top: clamp(42px, 6vw, 84px);
   display: grid;
-  gap: 10px;
-  max-width: 72%;
+  gap: clamp(18px, 1.8vw, 30px);
+  max-width: 68%;
 }
 
 .client-card__body p {
-  font-size: clamp(15px, 1.15vw, 22px);
-  font-weight: 600;
-  line-height: 1.3;
+  font-size: clamp(18px, 1.85vw, 34px);
+  font-weight: 500;
+  line-height: 1.12;
+  color: #b5c9ff;
+  letter-spacing: -0.02em;
 }
 
 .client-card__qr {
-  display: grid;
-  gap: 8px;
-  justify-items: start;
-  margin-top: 8px;
+  display: none;
 }
 
 .client-card__qr-frame {
@@ -4332,9 +4351,9 @@ textarea {
 
 .client-card__brand {
   position: absolute;
-  right: 30px;
-  top: 84px;
-  width: 285px;
+  right: clamp(22px, 2.6vw, 44px);
+  top: clamp(120px, 11vw, 192px);
+  width: min(320px, 26vw);
   filter: brightness(0) invert(1);
 }
 
@@ -4342,58 +4361,452 @@ textarea {
   position: absolute;
   left: 0;
   right: 0;
-  bottom: -8px;
+  bottom: 0;
   width: 100%;
-  opacity: 0.48;
+  opacity: 0.26;
 }
 
 .client-card__download {
   position: absolute;
-  right: 14px;
-  bottom: 12px;
-  border: 2px solid rgba(170, 186, 225, 0.35);
-  border-radius: 14px;
-  background: rgba(25, 38, 76, 0.94);
+  right: clamp(18px, 1.8vw, 30px);
+  bottom: clamp(16px, 1.7vw, 26px);
+  border: 1px solid rgba(200, 214, 255, 0.38);
+  border-radius: 22px;
+  background: rgba(20, 28, 53, 0.72);
   color: #ffffff;
-  min-height: 42px;
-  padding: 8px 14px;
-  font-size: 14px;
-  font-weight: 600;
+  min-height: clamp(56px, 4.5vw, 88px);
+  min-width: clamp(260px, 34vw, 560px);
+  padding: 14px 24px;
+  font-size: clamp(18px, 2vw, 38px);
+  font-weight: 700;
   display: inline-flex;
   align-items: center;
-  gap: 10px;
+  justify-content: center;
+  white-space: nowrap;
   cursor: pointer;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 14px 28px rgba(0, 0, 0, 0.28);
+  backdrop-filter: blur(10px);
+}
+
+.client-card__download:hover {
+  background: rgba(24, 34, 60, 0.8);
+}
+
+.client-card--inactive .client-card__download {
+  border-color: rgba(255, 90, 58, 0.32);
 }
 
 .client-guarantees {
-  border-radius: 24px;
-  background: #f5f5f6;
-  padding: 24px 28px;
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  border-radius: 28px;
+  border: 3px solid #081432;
+  background:
+    url('/background.png') center center / cover no-repeat,
+    linear-gradient(180deg, #ffffff 0%, #f7f7f8 100%);
+  box-shadow: 0 20px 36px rgba(5, 12, 32, 0.08);
+  padding: 24px 26px 22px;
   min-height: 320px;
 }
 
-.client-guarantees h2 {
+.client-guarantees::before {
+  content: '';
+  position: absolute;
+  inset: -22%;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.02));
+  opacity: 1;
+  pointer-events: none;
+}
+
+.client-guarantees::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.02));
+  pointer-events: none;
+}
+
+.client-guarantees__title {
+  position: relative;
+  z-index: 1;
   text-align: center;
-  font-size: clamp(28px, 2.8vw, 48px);
-  color: #071539;
-  font-weight: 700;
+  font-size: clamp(28px, 2.2vw, 40px);
+  color: #081432;
+  font-weight: 800;
+  letter-spacing: -0.02em;
 }
 
-.client-guarantees ul {
-  margin-top: 20px;
+.client-guarantees__list {
+  position: relative;
+  z-index: 1;
+  margin-top: 26px;
   list-style: none;
+  display: grid;
+  gap: 16px;
+  flex: 1;
+  overflow: auto;
+  padding-right: 4px;
 }
 
-.client-guarantees li {
-  font-size: clamp(18px, 2.1vw, 40px);
-  color: #5d626a;
-  line-height: 1.23;
+.client-guarantees__item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
 }
 
-.client-guarantees li::before {
-  content: "✓";
-  color: #071539;
-  margin-right: 14px;
+.client-guarantees__icon {
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  border: 2px solid #0a3f83;
+  color: #0a3f83;
+  background: rgba(255, 255, 255, 0.92);
+  display: inline-grid;
+  place-items: center;
+  flex: 0 0 22px;
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1;
+  margin-top: 2px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.95);
+}
+
+.client-guarantees__label {
+  color: #6b7079;
+  font-size: clamp(16px, 1.3vw, 22px);
+  font-weight: 500;
+  line-height: 1.28;
+}
+
+.client-recharge-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 3000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 18px;
+  background: rgba(2, 8, 28, 0.72);
+  backdrop-filter: blur(10px);
+}
+
+.client-recharge-modal__panel {
+  width: min(92vw, 620px);
+  max-height: min(92dvh, 760px);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  border-radius: 18px;
+  background: #ffffff;
+  box-shadow: 0 28px 54px rgba(3, 10, 28, 0.42);
+}
+
+.client-recharge-modal__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  min-height: 92px;
+  padding: 24px 28px 24px 72px;
+  background: linear-gradient(180deg, #091432 0%, #07112a 100%);
+  color: #dce8ff;
+}
+
+.client-recharge-modal__title {
+  font-size: clamp(28px, 2.4vw, 34px);
+  font-weight: 700;
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+}
+
+.client-recharge-modal__close {
+  flex: 0 0 auto;
+  width: 42px;
+  height: 42px;
+  border: 0;
+  border-radius: 999px;
+  background: #d9e2ff;
+  color: #081432;
+  font-size: 30px;
+  line-height: 1;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.85);
+}
+
+.client-recharge-modal__close:disabled {
+  cursor: wait;
+  opacity: 0.82;
+}
+
+.client-recharge-modal__body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  overflow: auto;
+  padding: 66px 88px 44px;
+  background: #ffffff;
+}
+
+.client-recharge-modal__content {
+  width: 100%;
+  display: grid;
+  gap: 32px;
+}
+
+.client-recharge-modal__content--summary {
+  gap: 24px;
+}
+
+.client-recharge-modal__content--wave {
+  gap: 28px;
+}
+
+.client-recharge-modal__price-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  border-radius: 14px;
+  padding: 14px 20px 14px 24px;
+  background: linear-gradient(180deg, #d7e3ff 0%, #cfdcff 100%);
+}
+
+.client-recharge-modal__price-copy {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+
+.client-recharge-modal__price-label {
+  color: #0b1b44;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.15;
+}
+
+.client-recharge-modal__price-value {
+  color: #111827;
+  font-size: clamp(24px, 2.8vw, 30px);
+  font-weight: 800;
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+}
+
+.client-recharge-modal__price-badge {
+  width: 44px;
+  height: 44px;
+  flex: 0 0 44px;
+  border-radius: 999px;
+  background: #071539;
+  display: grid;
+  place-items: center;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12);
+}
+
+.client-recharge-modal__price-badge svg {
+  width: 22px;
+  height: 22px;
+}
+
+.client-recharge-modal__error {
+  margin-top: -6px;
+  border: 1px solid rgba(220, 38, 38, 0.25);
+  border-radius: 12px;
+  background: #fef2f2;
+  color: #b91c1c;
+  padding: 12px 14px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.client-recharge-modal__features {
+  list-style: none;
+  display: grid;
+  gap: 18px;
+  padding: 0;
+  margin: 0;
+}
+
+.client-recharge-modal__feature {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.client-recharge-modal__check {
+  width: 20px;
+  flex: 0 0 20px;
+  color: #111111;
+  font-size: 20px;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.client-recharge-modal__feature-label {
+  color: #6e727b;
+  font-size: clamp(15px, 1.45vw, 18px);
+  font-weight: 500;
+  line-height: 1.28;
+}
+
+.client-recharge-modal__method,
+.client-recharge-modal__amount {
+  min-height: 58px;
+  border: 1px solid #c9ced8;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #ffffff;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.85);
+}
+
+.client-recharge-modal__method {
+  display: flex;
+  align-items: stretch;
+}
+
+.client-recharge-modal__method-logo,
+.client-recharge-modal__amount-icon {
+  width: 70px;
+  flex: 0 0 70px;
+  display: grid;
+  place-items: center;
+  background: #ffffff;
+  border-right: 1px solid #c9ced8;
+}
+
+.client-recharge-modal__method-logo img {
+  width: 34px;
+  height: 34px;
+  object-fit: contain;
+  display: block;
+}
+
+.client-recharge-modal__method-copy,
+.client-recharge-modal__amount-input {
+  flex: 1;
+  min-width: 0;
+}
+
+.client-recharge-modal__method-copy {
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+}
+
+.client-recharge-modal__method-label {
+  color: #b3b6bf;
+  font-size: clamp(15px, 1.5vw, 18px);
+  font-weight: 500;
+  line-height: 1.2;
+}
+
+.client-recharge-modal__method-caret {
+  width: 52px;
+  flex: 0 0 52px;
+  display: grid;
+  place-items: center;
+  color: #d4d6da;
+}
+
+.client-recharge-modal__amount {
+  display: flex;
+  align-items: stretch;
+}
+
+.client-recharge-modal__amount-icon {
+  background: #ffffff;
+  border-right-color: #c9ced8;
+}
+
+.client-recharge-modal__amount-icon svg {
+  width: 24px;
+  height: 24px;
+}
+
+.client-recharge-modal__amount-input {
+  border: 0;
+  outline: none;
+  background: transparent;
+  padding: 0 16px;
+  color: #c7c8ce;
+  font-size: clamp(18px, 1.7vw, 20px);
+  font-weight: 600;
+  min-height: 100%;
+}
+
+.client-recharge-modal__amount-input::placeholder {
+  color: #c7c8ce;
+  opacity: 1;
+}
+
+.client-recharge-modal__amount-currency {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  padding: 0 18px 0 6px;
+  color: #9a9ea8;
+  font-size: clamp(15px, 1.4vw, 18px);
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.client-recharge-modal__actions {
+  display: grid;
+  gap: 12px;
+  margin-top: 10px;
+}
+
+.client-recharge-modal__actions--summary {
+  margin-top: 6px;
+}
+
+.client-recharge-modal__actions--wave {
+  margin-top: 10px;
+}
+
+.client-recharge-modal__pay {
+  min-height: 76px;
+  border: 0;
+  border-radius: 12px;
+  background: #071539;
+  color: #ffffff;
+  font-size: clamp(22px, 2vw, 26px);
+  font-weight: 400;
+  cursor: pointer;
+  box-shadow: none;
+}
+
+.client-recharge-modal__pay:hover {
+  background: #0a1d4c;
+}
+
+.client-recharge-modal__pay:disabled {
+  cursor: wait;
+  opacity: 0.75;
+}
+
+.client-recharge-modal__later {
+  border: 0;
+  background: transparent;
+  color: #14213f;
+  font-size: clamp(18px, 1.9vw, 24px);
+  font-weight: 400;
+  text-align: right;
+  justify-self: end;
+  cursor: pointer;
+}
+
+.client-recharge-modal__later:disabled {
+  cursor: wait;
+  opacity: 0.7;
 }
 
 .client-partners {
@@ -4614,27 +5027,27 @@ textarea {
 
   .client-card,
   .client-guarantees {
-    min-height: 360px;
+    min-height: 380px;
   }
 
   .client-card__top h2 {
-    font-size: clamp(28px, 2.8vw, 44px);
+    font-size: clamp(34px, 3.8vw, 62px);
   }
 
   .client-card__status {
-    font-size: clamp(24px, 2.2vw, 38px);
+    font-size: clamp(22px, 2.4vw, 42px);
   }
 
   .client-card__body p {
-    font-size: clamp(17px, 1.7vw, 24px);
+    font-size: clamp(17px, 1.7vw, 30px);
   }
 
-  .client-guarantees h2 {
-    font-size: clamp(42px, 4.2vw, 66px);
+  .client-guarantees__title {
+    font-size: clamp(28px, 2.2vw, 40px);
   }
 
-  .client-guarantees li {
-    font-size: clamp(28px, 3.3vw, 54px);
+  .client-guarantees__label {
+    font-size: clamp(15px, 1.2vw, 20px);
   }
 
   .client-partners h2 {
@@ -4673,36 +5086,70 @@ textarea {
   }
 
   .client-card {
-    padding: 20px 18px 74px;
-    min-height: 330px;
+    padding: 22px 18px 86px;
+    min-height: 340px;
+    border-radius: 28px;
   }
 
   .client-card__body {
-    margin-top: 20px;
+    margin-top: 34px;
     max-width: 100%;
   }
 
+  .client-card__top h2 {
+    font-size: clamp(28px, 6.4vw, 40px);
+  }
+
+  .client-card__status {
+    font-size: clamp(20px, 5vw, 30px);
+  }
+
+  .client-card__body p {
+    font-size: clamp(15px, 3.6vw, 22px);
+  }
+
   .client-card__brand {
-    width: 128px;
-    right: 18px;
-    top: 112px;
+    width: 136px;
+    right: 16px;
+    top: 108px;
   }
 
   .client-card__download {
+    min-width: 0;
+    left: 18px;
+    right: 18px;
     font-size: 16px;
-    min-height: 44px;
+    min-height: 46px;
+    padding: 12px 18px;
   }
 
   .client-guarantees {
-    padding: 24px 18px;
+    padding: 22px 18px;
     min-height: auto;
   }
 
-  .client-guarantees ul {
-    margin-top: 16px;
+  .client-guarantees__title {
+    font-size: clamp(24px, 5vw, 30px);
   }
 
-  .client-guarantees li {
+  .client-guarantees__list {
+    margin-top: 18px;
+    gap: 12px;
+  }
+
+  .client-guarantees__item {
+    gap: 10px;
+  }
+
+  .client-guarantees__icon {
+    width: 20px;
+    height: 20px;
+    flex-basis: 20px;
+    font-size: 12px;
+  }
+
+  .client-guarantees__label {
+    font-size: 15px;
     line-height: 1.32;
   }
 
@@ -4722,5 +5169,121 @@ textarea {
   .client-partners__map-wrap,
   .client-partners__map {
     min-height: 320px;
+  }
+
+  .client-recharge-modal {
+    align-items: flex-start;
+    padding: 12px;
+  }
+
+  .client-recharge-modal__panel {
+    width: min(100%, 620px);
+    max-height: calc(100dvh - 24px);
+    border-radius: 24px;
+  }
+
+  .client-recharge-modal__header {
+    min-height: 82px;
+    padding: 20px 18px 18px;
+  }
+
+  .client-recharge-modal__body {
+    padding: 38px 18px 24px;
+  }
+
+  .client-recharge-modal__content {
+    gap: 24px;
+  }
+
+  .client-recharge-modal__content--summary {
+    gap: 20px;
+  }
+
+  .client-recharge-modal__content--wave {
+    gap: 22px;
+  }
+
+  .client-recharge-modal__title {
+    font-size: clamp(22px, 4.8vw, 30px);
+  }
+
+  .client-recharge-modal__close {
+    width: 38px;
+    height: 38px;
+    font-size: 28px;
+  }
+
+  .client-recharge-modal__price-card {
+    padding: 14px 16px 14px 18px;
+  }
+
+  .client-recharge-modal__features {
+    gap: 14px;
+  }
+
+  .client-recharge-modal__feature {
+    gap: 10px;
+  }
+
+  .client-recharge-modal__check {
+    width: 18px;
+    flex-basis: 18px;
+    font-size: 18px;
+  }
+
+  .client-recharge-modal__feature-label {
+    font-size: 15px;
+  }
+
+  .client-recharge-modal__price-badge {
+    width: 40px;
+    height: 40px;
+    flex-basis: 40px;
+  }
+
+  .client-recharge-modal__method-logo,
+  .client-recharge-modal__amount-icon {
+    width: 60px;
+    flex-basis: 60px;
+  }
+
+  .client-recharge-modal__method-logo img {
+    width: 30px;
+    height: 30px;
+  }
+
+  .client-recharge-modal__method-copy {
+    padding: 0 12px;
+  }
+
+  .client-recharge-modal__method-label {
+    font-size: 15px;
+  }
+
+  .client-recharge-modal__method-caret {
+    width: 46px;
+    flex-basis: 46px;
+  }
+
+  .client-recharge-modal__amount-input {
+    padding: 0 12px;
+  }
+
+  .client-recharge-modal__amount-currency {
+    padding-right: 14px;
+  }
+
+  .client-recharge-modal__actions {
+    gap: 10px;
+    margin-top: 6px;
+  }
+
+  .client-recharge-modal__pay {
+    min-height: 60px;
+    font-size: clamp(18px, 4vw, 23px);
+  }
+
+  .client-recharge-modal__later {
+    font-size: clamp(16px, 3.6vw, 20px);
   }
 }

@@ -19,6 +19,8 @@ import { authApi } from '../../features/auth/services/authApi';
 import { clientApi } from '../../features/clients/services/clientApi';
 import type { Client } from '../../features/clients/types/client.types';
 import { packApi } from '../../features/packs/services/packApi';
+import type { Pack } from '../../features/packs/types/pack.types';
+import { paiementApi } from '../../features/paiements/services/paiementApi';
 import { packGarantieApi } from '../../features/garanties/services/packGarantieApi';
 import type { PackGarantie } from '../../features/garanties/types/packGarantie.types';
 import { souscriptionApi } from '../../features/souscriptions/services/souscriptionApi';
@@ -27,9 +29,11 @@ import { carteApi } from '../../features/cartes/services/carteApi';
 import type { Carte } from '../../features/cartes/types/carte.types';
 import { partenaireApi } from '../../features/partenaires/services/partenaireApi';
 import type { Partenaire } from '../../features/partenaires/types/partenaire.types';
+import RechargeCardModal from '../components/RechargeCardModal';
 import { useAuthStore } from '../../store/authStore';
 import { ROUTES } from '../../shared/constants/routes';
 import { ASSETS } from '../../shared/constants/assets';
+import { formatFriendlyApiError } from '../../shared/utils/apiErrorMessages';
 
 type Hospital = {
   id: string;
@@ -39,6 +43,11 @@ type Hospital = {
   address: string;
   distanceKm: number | null;
   telephone?: string | null;
+};
+
+type GuaranteeDisplayItem = {
+  id: string;
+  label: string;
 };
 
 type DeviceOrientationEventWithCompass = DeviceOrientationEvent & {
@@ -111,6 +120,9 @@ const formatDate = (value?: string | null) => {
     year: 'numeric',
   }).format(date);
 };
+
+const formatCurrencyAmount = (value: number) =>
+  new Intl.NumberFormat('fr-FR').format(value).replace(/\u202f/g, ' ');
 
 const isImageSource = (value: string) => /^(data:image\/|https?:\/\/|\/)/i.test(value);
 
@@ -274,6 +286,15 @@ const uniqueHospitals = (hospitals: Hospital[]) => {
     return true;
   });
 };
+
+const RECHARGE_DEFAULT_FEATURES: GuaranteeDisplayItem[] = [
+  { id: 'recharge-feature-1', label: 'Tout inclus' },
+  { id: 'recharge-feature-2', label: 'Hospitalisation' },
+  { id: 'recharge-feature-3', label: 'Vision' },
+  { id: 'recharge-feature-4', label: 'Service VIP' },
+  { id: 'recharge-feature-5', label: 'Soins dentaires' },
+  { id: 'recharge-feature-6', label: 'Assistance santé' },
+];
 
 const getHospitalMarkerIcon = (hospital: Hospital, isSelected: boolean) => {
   const badge = isSelected ? 'HOPITAL CHOISI' : 'HOPITAL';
@@ -681,8 +702,12 @@ const ClientSpacePage: FC = () => {
   const [clientProfile, setClientProfile] = useState<Client | null>(null);
   const [garanties, setGaranties] = useState<PackGarantie[]>([]);
   const [activeSouscription, setActiveSouscription] = useState<Souscription | null>(null);
+  const [currentPack, setCurrentPack] = useState<Pack | null>(null);
   const [packLabel, setPackLabel] = useState<string | null>(null);
   const [carte, setCarte] = useState<Carte | null>(null);
+  const [rechargeModalStep, setRechargeModalStep] = useState<'summary' | 'wave' | null>(null);
+  const [isInitiatingPayment, setIsInitiatingPayment] = useState(false);
+  const [rechargeError, setRechargeError] = useState<string | null>(null);
   const fullName = useAuthStore((s) => s.fullName);
 
   useEffect(() => {
@@ -708,11 +733,11 @@ const ClientSpacePage: FC = () => {
         if (isMounted) setGaranties([]);
         if (isMounted) setActiveSouscription(null);
         if (isMounted) setPackLabel(null);
+        if (isMounted) setCurrentPack(null);
         return;
       }
 
       let packId: string | null = null;
-      let packName: string | null = null;
       try {
         const souscriptions = await souscriptionApi.list();
         const active = souscriptions.find(
@@ -727,39 +752,49 @@ const ClientSpacePage: FC = () => {
         if (isMounted) setActiveSouscription(null);
       }
 
-      if (!packId && clientProfile.typeAssurance) {
-        try {
-          const packs = await packApi.list();
-          const target = clientProfile.typeAssurance.trim().toLowerCase();
-          const packMatch = packs.find(
-            (pack) =>
-              pack.nom.trim().toLowerCase() === target ||
-              pack.code.trim().toLowerCase() === target
-          );
-          packId = packMatch?.id ?? null;
-          packName = packMatch?.nom ?? null;
-        } catch {
-          packId = null;
+      let resolvedPack: Pack | null = null;
+      try {
+        const packs = await packApi.list();
+
+        if (packId) {
+          resolvedPack = packs.find((pack) => pack.id === packId) ?? null;
         }
+
+        if (!resolvedPack && clientProfile.typeAssurance) {
+          const target = clientProfile.typeAssurance.trim().toLowerCase();
+          resolvedPack =
+            packs.find(
+              (pack) =>
+                pack.nom.trim().toLowerCase() === target ||
+                pack.code.trim().toLowerCase() === target,
+            ) ?? null;
+          if (resolvedPack) {
+            packId = resolvedPack.id;
+          }
+        }
+
+        if (!resolvedPack && packId) {
+          resolvedPack = packs.find((pack) => pack.id === packId) ?? null;
+        }
+      } catch {
+        resolvedPack = null;
+      }
+
+      if (isMounted) {
+        setCurrentPack(resolvedPack);
+        setPackLabel(resolvedPack?.nom ?? clientProfile.typeAssurance ?? null);
       }
 
       if (!packId) {
         if (isMounted) setGaranties([]);
-        if (isMounted) setPackLabel(packName);
         return;
       }
 
       try {
-        if (!packName) {
-          const packs = await packApi.list();
-          packName = packs.find((pack) => pack.id === packId)?.nom ?? null;
-        }
-        if (isMounted) setPackLabel(packName);
         const data = await packGarantieApi.listByPack(packId);
         if (isMounted) setGaranties(data);
       } catch {
         if (isMounted) setGaranties([]);
-        if (isMounted) setPackLabel(packName);
       }
     };
 
@@ -794,10 +829,79 @@ const ClientSpacePage: FC = () => {
   }, [activeSouscription?.id]);
 
   const displayName = clientProfile ? `${clientProfile.prenom} ${clientProfile.nom}` : fullName ?? 'Client';
-  const cardStatus = carte?.statut === 'EXPIRED' ? 'Expiree' : 'Active';
-  const cardValidity = formatDate(carte?.dateExpiration);
+  const cardIsActive = carte?.statut === 'ACTIVATED';
+  const cardStatus = cardIsActive ? 'active' : 'Inactive';
+  const cardActionLabel = cardIsActive ? 'Telecharger votre carte' : 'Recharger votre carte';
   const cardPackLabel = packLabel ?? clientProfile?.typeAssurance ?? 'N/A';
+  const rechargePackId = currentPack?.id ?? activeSouscription?.packId ?? null;
+  const rechargeTitle = currentPack?.nom ?? cardPackLabel;
+  const rechargePriceLabel = currentPack
+    ? `${formatCurrencyAmount(currentPack.prix)} FCFA`
+    : 'Tarification indisponible';
+  const rechargeAmountText = currentPack ? formatCurrencyAmount(currentPack.prix) : '';
+  const cardValidity = formatDate(carte?.dateExpiration);
   const qrPayload = clientProfile?.numeroAssurance ?? carte?.numeroCarte ?? displayName;
+  const guaranteeItems = useMemo<GuaranteeDisplayItem[]>(
+    () =>
+      garanties.length > 0
+        ? garanties.map((garantie) => ({
+            id: garantie.id,
+            label: garantie.garantieLibelle,
+          }))
+        : RECHARGE_DEFAULT_FEATURES,
+    [garanties],
+  );
+
+  const handleCardAction = () => {
+    if (!cardIsActive) {
+      setRechargeError(null);
+      setRechargeModalStep('summary');
+    }
+  };
+
+  const closeRechargeModal = () => {
+    if (isInitiatingPayment) {
+      return;
+    }
+
+    setRechargeModalStep(null);
+    setRechargeError(null);
+  };
+
+  const handleProceedToWave = () => {
+    if (!rechargePackId) {
+      setRechargeError('Impossible de préparer le paiement pour ce pack.');
+      return;
+    }
+
+    setRechargeError(null);
+    setRechargeModalStep('wave');
+  };
+
+  const handleRechargeNow = async () => {
+    if (!clientProfile || !rechargePackId) {
+      setRechargeError('Impossible de préparer le paiement pour cette carte.');
+      return;
+    }
+
+    setIsInitiatingPayment(true);
+    setRechargeError(null);
+
+    try {
+      const response = await paiementApi.initierPaydunya({
+        clientId: clientProfile.id,
+        packId: rechargePackId,
+      });
+
+      setRechargeModalStep(null);
+      window.location.assign(response.paymentUrl);
+    } catch (error) {
+      const friendly = formatFriendlyApiError(error);
+      setRechargeError(friendly.message);
+    } finally {
+      setIsInitiatingPayment(false);
+    }
+  };
 
   return (
     <div className="client-space">
@@ -826,18 +930,24 @@ const ClientSpacePage: FC = () => {
 
       <main className="client-space__content">
         <section className="client-space__grid">
-          <article className="client-card">
+          <article className={`client-card ${cardIsActive ? 'client-card--active' : 'client-card--inactive'}`}>
             <div className="client-card__top">
               <h2>Carte Digitale Assurance</h2>
-              <span className="client-card__status">{cardStatus}</span>
+              <span
+                className={`client-card__status ${
+                  cardIsActive ? 'client-card__status--active' : 'client-card__status--inactive'
+                }`}
+              >
+                {cardStatus}
+              </span>
             </div>
 
             <div className="client-card__body">
               <p>Nom : {displayName}</p>
-              <p>Numero Assurance : {clientProfile?.numeroAssurance ?? 'N/A'}</p>
-              <p>Numero Carte : {carte?.numeroCarte ?? 'N/A'}</p>
+              <p>Numéro Assurance : {clientProfile?.numeroAssurance ?? 'N/A'}</p>
+              <p>Numéro Carte : {carte?.numeroCarte ?? 'N/A'}</p>
               <p>Formule : {cardPackLabel}</p>
-              <p>Validite : {cardValidity}</p>
+              <p>Validité : {cardValidity}</p>
               <DigitalQrCode
                 qrCode={carte?.qrCode}
                 payload={qrPayload}
@@ -857,24 +967,30 @@ const ClientSpacePage: FC = () => {
               className="client-card__ecg"
             />
 
-            <button type="button" className="client-card__download">
-              Telecharger
-              <span aria-hidden="true">↓</span>
+            <button
+              type="button"
+              className="client-card__download"
+              onClick={handleCardAction}
+              aria-label={cardActionLabel}
+              title={cardActionLabel}
+            >
+              {cardActionLabel}
             </button>
           </article>
 
-          <article className="client-guarantees">
-            <h2>Mes Garanties</h2>
-            <ul>
-              {garanties.length > 0
-                ? garanties.map((g) => <li key={g.id}>{g.garantieLibelle}</li>)
-                : (
-                  <>
-                    <li>Consultations generales</li>
-                    <li>Medicaments de base</li>
-                    <li>Prevention (controle sante)</li>
-                  </>
-                )}
+          <article className="client-guarantees" aria-labelledby="client-guarantees-title">
+            <h2 id="client-guarantees-title" className="client-guarantees__title">
+              Mes Garanties
+            </h2>
+            <ul className="client-guarantees__list" aria-label="Garanties incluses dans la formule">
+              {guaranteeItems.map((item) => (
+                <li key={item.id} className="client-guarantees__item">
+                  <span className="client-guarantees__icon" aria-hidden="true">
+                    ✓
+                  </span>
+                  <span className="client-guarantees__label">{item.label}</span>
+                </li>
+              ))}
             </ul>
           </article>
         </section>
@@ -1033,6 +1149,20 @@ const ClientSpacePage: FC = () => {
           </div>
         </section>
       </main>
+
+      <RechargeCardModal
+        open={rechargeModalStep !== null}
+        step={rechargeModalStep ?? 'summary'}
+        title={rechargeTitle}
+        priceLabel={rechargePriceLabel}
+        amountText={rechargeAmountText}
+        features={guaranteeItems}
+        isSubmitting={isInitiatingPayment}
+        errorMessage={rechargeError}
+        onClose={closeRechargeModal}
+        onProceedToWave={handleProceedToWave}
+        onPayNow={handleRechargeNow}
+      />
     </div>
   );
 };
