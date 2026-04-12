@@ -21,7 +21,12 @@ const LoginPage: FC = () => {
   const [lastAttempt, setLastAttempt] = useState<LoginFormData | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [logoLoaded, setLogoLoaded] = useState(false);
+  const [benchLoaded, setBenchLoaded] = useState(false);
+  const [peopleLoaded, setPeopleLoaded] = useState(false);
+  const [shadowLoaded, setShadowLoaded] = useState(false);
   const { register, handleSubmit } = useForm<LoginFormData>();
+  const illustrationReady = benchLoaded && peopleLoaded && shadowLoaded;
 
   const submitLogin = async (data: LoginFormData) => {
     setIsSubmitting(true);
@@ -52,14 +57,42 @@ const LoginPage: FC = () => {
   return (
     <div className="login-page">
       <div className="login-left">
-        <img src={Logo} alt="MA Santé Assurance" className="login-logo" />
-
-        <div className="login-illustration-wrap">
-          <img src="/login-bench.svg" alt="" aria-hidden="true" className="login-bench" />
-          <img src="/login-illustration.svg" alt="Médecin et patient" className="login-people" />
+        <div className="login-logo-shell">
+          {!logoLoaded && <div className="skeleton-shimmer login-logo-skeleton" aria-hidden="true" />}
+          <img
+            src={Logo}
+            alt="MA Santé Assurance"
+            className={`login-logo ${logoLoaded ? 'image-loaded' : 'image-loading'}`}
+            onLoad={() => setLogoLoaded(true)}
+          />
         </div>
 
-        <img src="/login-shadow.svg" alt="" aria-hidden="true" className="login-shadow" />
+        <div className="login-illustration-wrap">
+          {!illustrationReady && (
+            <div className="skeleton-shimmer login-illustration-skeleton" aria-hidden="true" />
+          )}
+          <img
+            src="/login-bench.svg"
+            alt=""
+            aria-hidden="true"
+            className={`login-bench ${illustrationReady ? 'image-loaded' : 'image-loading'}`}
+            onLoad={() => setBenchLoaded(true)}
+          />
+          <img
+            src="/login-illustration.svg"
+            alt="Médecin et patient"
+            className={`login-people ${illustrationReady ? 'image-loaded' : 'image-loading'}`}
+            onLoad={() => setPeopleLoaded(true)}
+          />
+        </div>
+
+        <img
+          src="/login-shadow.svg"
+          alt=""
+          aria-hidden="true"
+          className={`login-shadow ${illustrationReady ? 'image-loaded' : 'image-loading'}`}
+          onLoad={() => setShadowLoaded(true)}
+        />
       </div>
 
       <div className="login-right">

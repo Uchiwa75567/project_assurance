@@ -69,6 +69,7 @@ const RegisterPage: FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [availablePacks, setAvailablePacks] = useState<string[]>([]);
+  const [illustrationLoaded, setIllustrationLoaded] = useState(false);
   const {
     register,
     handleSubmit,
@@ -189,7 +190,13 @@ const RegisterPage: FC = () => {
   return (
     <div className="login-page register-page">
       <div className="register-left">
-        <img src="/register-illustration.svg" alt="Ma Santé Assurance" className="register-illustration" />
+        {!illustrationLoaded && <div className="skeleton-shimmer register-illustration-skeleton" aria-hidden="true" />}
+        <img
+          src="/register-illustration.svg"
+          alt="Ma Santé Assurance"
+          className={`register-illustration ${illustrationLoaded ? 'image-loaded' : 'image-loading'}`}
+          onLoad={() => setIllustrationLoaded(true)}
+        />
       </div>
 
       <div className="login-right">
