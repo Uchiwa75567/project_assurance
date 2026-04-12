@@ -4207,17 +4207,38 @@ textarea {
   font-weight: 700;
 }
 
+.client-space__actions {
+  display: inline-flex;
+  align-items: center;
+  justify-self: end;
+  gap: 16px;
+}
+
 .client-space__user {
-  border: 0;
-  background: transparent;
   color: #ffffff;
   font-size: 16px;
   font-weight: 700;
   display: inline-flex;
   align-items: center;
-  justify-self: end;
   gap: 16px;
+}
+
+.client-space__logout {
+  border: 1px solid rgba(190, 210, 255, 0.35);
+  background: rgba(6, 20, 58, 0.55);
+  color: #e9f1ff;
+  font-size: 14px;
+  font-weight: 700;
+  padding: 10px 16px;
+  border-radius: 999px;
   cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+}
+
+.client-space__logout:hover {
+  border-color: rgba(190, 210, 255, 0.7);
+  box-shadow: 0 8px 18px rgba(4, 12, 34, 0.35);
+  transform: translateY(-1px);
 }
 
 .client-space__avatar {
@@ -5016,6 +5037,11 @@ textarea {
     font-size: 16px;
   }
 
+  .client-space__logout {
+    font-size: 13px;
+    padding: 9px 14px;
+  }
+
   .client-space__avatar {
     width: 44px;
     height: 44px;
@@ -5072,8 +5098,10 @@ textarea {
     padding: 14px 18px;
   }
 
-  .client-space__user {
+  .client-space__actions {
     justify-self: center;
+    flex-wrap: wrap;
+    justify-content: center;
   }
 
   .client-space__content {

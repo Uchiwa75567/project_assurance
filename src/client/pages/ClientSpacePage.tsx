@@ -940,19 +940,24 @@ const ClientSpacePage: FC = () => {
         />
         <h1 className="client-space__title">Espace Client</h1>
 
-        <button
-          type="button"
-          className="client-space__user"
-          onClick={handleLogout}
-          title="Se deconnecter"
-        >
-          <span>{displayName}</span>
-          {clientProfile?.photoUrl ? (
-            <img src={clientProfile.photoUrl} alt={displayName} className="client-space__avatar" />
-          ) : (
-            <span className="client-space__avatar" aria-hidden="true" />
-          )}
-        </button>
+        <div className="client-space__actions">
+          <div className="client-space__user" aria-label={`Profil de ${displayName}`}>
+            <span>{displayName}</span>
+            {clientProfile?.photoUrl ? (
+              <img src={clientProfile.photoUrl} alt={displayName} className="client-space__avatar" />
+            ) : (
+              <span className="client-space__avatar" aria-hidden="true" />
+            )}
+          </div>
+          <button
+            type="button"
+            className="client-space__logout"
+            onClick={handleLogout}
+            title="Se deconnecter"
+          >
+            Deconnexion
+          </button>
+        </div>
       </header>
 
       <main className="client-space__content">
