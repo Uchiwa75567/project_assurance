@@ -20,7 +20,7 @@ const App: FC = () => {
   useEffect(() => {
     let active = true;
     const start = Date.now();
-    const minDurationMs = 900;
+    const minDurationMs = 3000;
     const maxDurationMs = 2500;
 
     const preload = (sources: string[]) =>
