@@ -60,6 +60,7 @@ const App: FC = () => {
         <div className="app-splash" role="status" aria-live="polite">
           <div className="app-splash__halo" />
           <img src={Logo} alt="MA Santé Assurance" className="app-splash__logo" />
+          <p className="app-splash__title">M&amp;A SANTE ASSURANCE</p>
           <div className="app-splash__pulse" />
         </div>
       )}
