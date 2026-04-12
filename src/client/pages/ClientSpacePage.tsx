@@ -124,6 +124,34 @@ const formatDate = (value?: string | null) => {
 const formatCurrencyAmount = (value: number) =>
   new Intl.NumberFormat('fr-FR').format(value).replace(/\u202f/g, ' ');
 
+const normalizePackValue = (value?: string | null) =>
+  value
+    ? value
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .toLowerCase()
+        .replace(/[_-]+/g, ' ')
+        .replace(/[^a-z0-9]+/g, ' ')
+        .replace(/\bpack\b/g, '')
+        .replace(/\s+/g, ' ')
+        .trim()
+    : '';
+
+const matchesPackValue = (candidate: string, reference?: string | null) => {
+  const normalizedCandidate = normalizePackValue(candidate);
+  const normalizedReference = normalizePackValue(reference);
+
+  if (!normalizedCandidate || !normalizedReference) {
+    return false;
+  }
+
+  return (
+    normalizedCandidate === normalizedReference ||
+    normalizedCandidate.includes(normalizedReference) ||
+    normalizedReference.includes(normalizedCandidate)
+  );
+};
+
 const isImageSource = (value: string) => /^(data:image\/|https?:\/\/|\/)/i.test(value);
 
 type DigitalQrCodeProps = {
@@ -761,12 +789,11 @@ const ClientSpacePage: FC = () => {
         }
 
         if (!resolvedPack && clientProfile.typeAssurance) {
-          const target = clientProfile.typeAssurance.trim().toLowerCase();
           resolvedPack =
             packs.find(
               (pack) =>
-                pack.nom.trim().toLowerCase() === target ||
-                pack.code.trim().toLowerCase() === target,
+                matchesPackValue(pack.nom, clientProfile.typeAssurance) ||
+                matchesPackValue(pack.code, clientProfile.typeAssurance),
             ) ?? null;
           if (resolvedPack) {
             packId = resolvedPack.id;
@@ -832,7 +859,7 @@ const ClientSpacePage: FC = () => {
   const cardIsActive = carte?.statut === 'ACTIVATED';
   const cardStatus = cardIsActive ? 'active' : 'Inactive';
   const cardActionLabel = cardIsActive ? 'Telecharger votre carte' : 'Recharger votre carte';
-  const cardPackLabel = packLabel ?? clientProfile?.typeAssurance ?? 'N/A';
+  const cardPackLabel = packLabel ?? clientProfile?.typeAssurance ?? 'Pack sélectionné';
   const rechargePackId = currentPack?.id ?? activeSouscription?.packId ?? null;
   const rechargeTitle = currentPack?.nom ?? cardPackLabel;
   const rechargePriceLabel = currentPack
