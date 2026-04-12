@@ -17,6 +17,7 @@ export const authApi = {
     telephone?: string | null;
     numeroCni?: string | null;
     photoUrl?: string | null;
+    typeAssurance?: string | null;
     password: string;
     role: 'CLIENT' | 'AGENT' | 'ADMIN';
   }) =>

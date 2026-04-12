@@ -13,6 +13,31 @@ export function formatFriendlyApiError(error: unknown): FriendlyApiError {
     const rawMessage = error.message.trim();
     const normalized = rawMessage.toLowerCase();
 
+    if (error.status === 401 || error.status === 403) {
+      return {
+        message: 'Identifiant ou mot de passe invalide.',
+        tone: 'danger',
+        retryable: false,
+      };
+    }
+
+    if (error.status === 400 && normalized) {
+      if (normalized.includes('identifiant') || normalized.includes('mot de passe')) {
+        return {
+          message: rawMessage,
+          tone: 'danger',
+          retryable: false,
+        };
+      }
+      if (normalized.includes('compte inactif')) {
+        return {
+          message: 'Compte inactif. Contacte un administrateur.',
+          tone: 'warning',
+          retryable: false,
+        };
+      }
+    }
+
     if (error.status >= 500) {
       return {
         message: 'Erreur serveur, réessayez dans un instant.',
@@ -23,7 +48,7 @@ export function formatFriendlyApiError(error: unknown): FriendlyApiError {
 
     if (error.status === 404) {
       return {
-        message: 'Service momentanément indisponible. Réessaie plus tard.',
+        message: "Service indisponible. Vérifie que l'API est démarrée et accessible.",
         tone: 'warning',
         retryable: true,
       };

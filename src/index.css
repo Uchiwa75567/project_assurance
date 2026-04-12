@@ -2647,6 +2647,147 @@ textarea {
   max-width: 420px;
 }
 
+/* ── Admin modal (packs edit) ── */
+.admin-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(4, 15, 38, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+  padding: 20px;
+}
+
+.admin-modal__panel {
+  background: #ffffff;
+  border-radius: 16px;
+  width: min(560px, 96vw);
+  box-shadow: 0 24px 60px rgba(4, 15, 38, 0.2);
+  display: flex;
+  flex-direction: column;
+}
+
+.admin-modal__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px 12px;
+  border-bottom: 1px solid #eef1f6;
+}
+
+.admin-modal__header h3 {
+  margin: 0;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 20px;
+  font-weight: 700;
+  color: #101828;
+}
+
+.admin-modal__close {
+  border: 0;
+  background: rgba(4, 15, 38, 0.08);
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 20px;
+  line-height: 1;
+  color: #040f26;
+}
+
+.admin-modal__form {
+  padding: 20px 24px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.admin-modal__field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 13px;
+  color: #667085;
+}
+
+.admin-modal__field input,
+.admin-modal__field textarea {
+  border: 1px solid #d0d5dd;
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 15px;
+  color: #101828;
+  outline: none;
+}
+
+.admin-modal__field textarea {
+  resize: vertical;
+}
+
+.admin-modal__grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.admin-modal__toggle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 14px;
+  color: #101828;
+}
+
+.admin-modal__toggle input {
+  width: 18px;
+  height: 18px;
+}
+
+.admin-modal__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 6px;
+}
+
+.admin-modal__primary,
+.admin-modal__secondary {
+  border-radius: 10px;
+  height: 44px;
+  padding: 0 18px;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  border: 0;
+}
+
+.admin-modal__primary {
+  background: #040f26;
+  color: #ffffff;
+}
+
+.admin-modal__primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.admin-modal__secondary {
+  background: #f2f4f7;
+  color: #101828;
+}
+
+.admin-modal__error {
+  color: #ef4444;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 13px;
+  margin: 0;
+}
+
 /* Section title "Mes Formules" */
 .packs-section-title {
   font-family: 'Plus Jakarta Sans', sans-serif;
@@ -2810,6 +2951,10 @@ textarea {
 
   .packs-toolbar__search {
     max-width: 100%;
+  }
+
+  .admin-modal__grid {
+    grid-template-columns: 1fr;
   }
 }
 

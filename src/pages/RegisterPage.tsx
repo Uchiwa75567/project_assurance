@@ -7,6 +7,7 @@ import ErrorBanner from '../shared/components/ErrorBanner';
 import { ApiError } from '../services/api/httpClient';
 import { ROUTES } from '../shared/constants/routes';
 import { formatFriendlyApiError } from '../shared/utils/apiErrorMessages';
+import { packApi } from '../features/packs/services/packApi';
 
 type RegisterFormData = {
   email: string;
@@ -14,6 +15,7 @@ type RegisterFormData = {
   dateNaissance: string;
   numeroDeTelephone: string;
   numeroDIdentite: string;
+  typeAssurance: string;
   photo?: FileList;
   motDePasse: string;
 };
@@ -66,6 +68,7 @@ const RegisterPage: FC = () => {
   const [birthDateDisplay, setBirthDateDisplay] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [availablePacks, setAvailablePacks] = useState<string[]>([]);
   const {
     register,
     handleSubmit,
@@ -80,6 +83,34 @@ const RegisterPage: FC = () => {
       if (photoPreview) URL.revokeObjectURL(photoPreview);
     };
   }, [photoPreview]);
+
+  useEffect(() => {
+    let active = true;
+
+    const fetchPacks = async () => {
+      try {
+        const packs = await packApi.list();
+        if (active) {
+          setAvailablePacks(packs.map((pack) => pack.nom));
+        }
+      } catch {
+        if (active) {
+          setAvailablePacks([
+            'Pack Noppale Sante',
+            'Pack Teranga Plus',
+            'Pack Yaay ak Ndaw',
+            'Pack Ker Yaram',
+          ]);
+        }
+      }
+    };
+
+    void fetchPacks();
+
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const applyServerFieldErrors = (message: string) => {
     const normalized = message.toLowerCase();
@@ -119,6 +150,7 @@ const RegisterPage: FC = () => {
         telephone: data.numeroDeTelephone || null,
         numeroCni: data.numeroDIdentite || null,
         photoUrl,
+        typeAssurance: data.typeAssurance || null,
         password: data.motDePasse,
         role: 'CLIENT',
       });
@@ -259,6 +291,24 @@ const RegisterPage: FC = () => {
                     autoComplete="tel"
                   />
                   {errors.numeroDeTelephone && <p className="form-field-error">{errors.numeroDeTelephone.message}</p>}
+                </div>
+
+                <div>
+                  <select
+                    {...register('typeAssurance', {
+                      required: 'Choisissez la formule souhaitée.',
+                    })}
+                    className={`login-input ${errors.typeAssurance ? 'login-input--error' : ''}`}
+                    defaultValue=""
+                  >
+                    <option value="" disabled>Choisir une formule</option>
+                    {availablePacks.map((pack) => (
+                      <option key={pack} value={pack}>
+                        {pack}
+                      </option>
+                    ))}
+                  </select>
+                  {errors.typeAssurance && <p className="form-field-error">{errors.typeAssurance.message}</p>}
                 </div>
               </div>
 
